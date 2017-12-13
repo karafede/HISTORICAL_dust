@@ -375,7 +375,9 @@ library(stringr)
 library(raster)
 
 
-#### importing the UAE shapefile to use as a masking 
+#### importing the UAE shapefile to use as a masking ##########################
+###############################################################################
+
 dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/UAE_boundary"
 ### shapefile for UAE
 shp_UAE <- readOGR(dsn = dir, layer = "uae_emirates")
@@ -393,8 +395,24 @@ shp_UAE@data$name <- 1:nrow(shp_UAE)
 # TERRA ###
 ###########
 
-wd_AOD <- "F:/Historical_DUST/MODIS_TERRA_2017"
-setwd(wd_AOD)
+setwd("F:/Historical_DUST")
+main <- getwd()
+list_directories <- dir(pattern = "MODIS_TERRA")
+
+#### !!!!! temporary remove the directory for the year 2017 !!!!!!
+
+k <- 1
+
+# initialize an empty raster stack 
+all_rasters <- stack()    # stack ALL DAY together (more than 13 years) in an unique raster
+
+
+for (k in 1:length(list_directories)) {
+  setwd(paste0(main,"/",list_directories[k]))
+  wd_AOD <- setwd(paste0(main,"/",list_directories[k]))
+  getwd()
+
+# wd_AOD <- "F:/Historical_DUST/MODIS_TERRA_2017"
 
 
 # list directories
@@ -436,7 +454,7 @@ for (i in 1:length(DAYS_TERRA)) {
     #             ymx=max(AOD_AQUA$y), ncol=4601, nrow= 3201)
     
     r <- raster(xmn=min(AOD_TERRA$x), xmx=max(AOD_TERRA$x), ymn=min(AOD_TERRA$y),
-                ymx=max(AOD_TERRA$y), ncol=nrow(grd_2)*0.8, nrow= nrow(grd_1)*0.8)
+                ymx=max(AOD_TERRA$y), ncol=nrow(grd_2)*0.7, nrow= nrow(grd_1)*0.9)
     
     raster_TERRA <- rasterize(AOD_TERRA[, 1:2], r, AOD_TERRA[,3], fun=mean)
     
@@ -449,22 +467,43 @@ for (i in 1:length(DAYS_TERRA)) {
     raster_TERRA <- mask(raster_TERRA, shp_UAE)  
     plot(raster_TERRA)
     
-    writeRaster(raster_TERRA, paste0(wd_AOD,"/",date,".tif"), overwrite = TRUE)   
+    writeRaster(raster_TERRA, paste0(wd_AOD,"/",date,"/", date,".tif"), overwrite = TRUE)  ### add DAY 
 
   }
   
+  all_rasters <- stack(all_rasters,raster_TERRA)
+  writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_TERRA.tif", overwrite = TRUE)
   BBB <- lapply(filenames_TERRA, raster_irregular)
   
 }
+}
 
-
+# writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_TERRA.tif", overwrite = TRUE) 
 
 ###########
 # AQUA ####
 ###########
 
-wd_AOD <- "F:/Historical_DUST/MODIS_AQUA_2017"
-setwd(wd_AOD)
+setwd("F:/Historical_DUST")
+main <- getwd()
+list_directories <- dir(pattern = "MODIS_AQUA")
+
+#### !!!!! temporary remove the directory for the year 2017 !!!!!!
+
+k <- 1
+
+# initialize an empty raster stack 
+all_rasters <- stack()    # stack ALL DAY together (more than 13 years) in an unique raster
+
+
+for (k in 1:length(list_directories)) {
+  setwd(paste0(main,"/",list_directories[k]))
+  wd_AOD <- setwd(paste0(main,"/",list_directories[k]))
+  getwd()
+
+
+# wd_AOD <- "F:/Historical_DUST/MODIS_AQUA_2017"
+# setwd(wd_AOD)
 
 
 # list directories
@@ -505,7 +544,7 @@ for (i in 1:length(DAYS_AQUA)) {
     #             ymx=max(AOD_AQUA$y), ncol=4601, nrow= 3201)
     
     r <- raster(xmn=min(AOD_AQUA$x), xmx=max(AOD_AQUA$x), ymn=min(AOD_AQUA$y),
-                ymx=max(AOD_AQUA$y), ncol=nrow(grd_2)*0.8, nrow= nrow(grd_1)*0.8)
+                ymx=max(AOD_AQUA$y), ncol=nrow(grd_2)*0.7, nrow= nrow(grd_1)*0.9)
     
     raster_AQUA <- rasterize(AOD_AQUA[, 1:2], r, AOD_AQUA[,3], fun=mean)
     
@@ -518,13 +557,17 @@ for (i in 1:length(DAYS_AQUA)) {
     raster_AQUA <- mask(raster_AQUA, shp_UAE)  
     plot(raster_AQUA)
     
-    writeRaster(raster_AQUA, paste0(wd_AOD,"/", date,".tif"), overwrite = TRUE)   
+    writeRaster(raster_AQUA, paste0(wd_AOD,"/",date,"/", date,".tif"), overwrite = TRUE)   
+    
   }
   
+  all_rasters <- stack(all_rasters,raster_AQUA)
+  writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_AQUA.tif", overwrite = TRUE)
   BBB <- lapply(filenames_AQUA, raster_irregular)
   
+  
 }
-
+}
 
 
   
