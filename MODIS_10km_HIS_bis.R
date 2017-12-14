@@ -399,12 +399,7 @@ setwd("F:/Historical_DUST")
 main <- getwd()
 list_directories <- dir(pattern = "MODIS_TERRA")
 
-#### !!!!! temporary remove the directory for the year 2017 !!!!!!
-
 k <- 1
-
-# initialize an empty raster stack 
-all_rasters <- stack()    # stack ALL DAY together (more than 13 years) in an unique raster
 
 
 for (k in 1:length(list_directories)) {
@@ -467,22 +462,83 @@ for (i in 1:length(DAYS_TERRA)) {
     raster_TERRA <- mask(raster_TERRA, shp_UAE)  
     plot(raster_TERRA)
     
-    writeRaster(raster_TERRA, paste0(wd_AOD,"/",date,"/", date,".tif"), overwrite = TRUE)  ### add DAY 
+    # save raster
+    writeRaster(raster_TERRA, paste0(wd_AOD,"/",date,"/", date,".tif"), overwrite = TRUE) 
 
   }
   
-  all_rasters <- stack(all_rasters,raster_TERRA)
-  writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_TERRA.tif", overwrite = TRUE)
   BBB <- lapply(filenames_TERRA, raster_irregular)
   
 }
 }
 
-# writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_TERRA.tif", overwrite = TRUE) 
+
+
+########################################################################################
+########################################################################################
+# make a stack raster  MODIS-TERRA-----------------------------------------------------
+########################################################################################
+########################################################################################
+
+# TERRA ##-------------------------------------------------------------------------
+setwd("F:/Historical_DUST")
+main <- getwd()
+list_directories <- dir(pattern = "MODIS_TERRA")
+
+all_rasters <- stack()    # inizialise the raster stack
+ref_raster_TERRA <- raster("F:/Historical_DUST/MODIS_TERRA_2004/002/002.tif")
+plot(ref_raster_TERRA)
+
+k <- 1
+
+
+for (k in 1:length(list_directories)) {
+  setwd(paste0(main,"/",list_directories[k]))
+  wd_AOD <- setwd(paste0(main,"/",list_directories[k]))
+  getwd()
+
+  
+  # list directories
+  DAYS_TERRA <- str_sub(list.dirs(), start = 3, end = -1)
+  DAYS_TERRA <- DAYS_TERRA[-1]
+  
+  i <- 2
+  
+  for (i in 1:length(DAYS_TERRA)) {
+    
+    date <- DAYS_TERRA[i]
+    setwd(paste0(wd_AOD,"/",DAYS_TERRA[i]))
+    
+    filenames_TERRA <- list.files(pattern = ".tif$")
+    
+# make a raster stack ############
+
+    r <- raster(filenames_TERRA)
+    r = projectRaster(r, ref_raster_TERRA)
+    plot(r)
+    all_rasters<- stack(all_rasters,r)
+
+  }
+  
+}
+
+
+# save the raster stack with all the MAIAC data at 1km resolution
+writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_TERRA.tif" , options= "INTERLEAVE=BAND", overwrite=T)
+
+
+AAAA <- raster("F:/Historical_DUST/MODIS_TERRA_2004/001/001.tif")
+extent(AAAA)
+plot(AAAA)
+
+BBBB <- raster("F:/Historical_DUST/MODIS_TERRA_2004/002/002.tif")
+extent(BBBB)
+plot(BBBB)
 
 ###########
 # AQUA ####
 ###########
+
 
 setwd("F:/Historical_DUST")
 main <- getwd()
@@ -557,17 +613,71 @@ for (i in 1:length(DAYS_AQUA)) {
     raster_AQUA <- mask(raster_AQUA, shp_UAE)  
     plot(raster_AQUA)
     
-    writeRaster(raster_AQUA, paste0(wd_AOD,"/",date,"/", date,".tif"), overwrite = TRUE)   
+    # save raster
+    writeRaster(raster_AQUA, paste0(wd_AOD,"/",date,"/", date,".tif"), overwrite = TRUE)
+    
     
   }
   
-  all_rasters <- stack(all_rasters,raster_AQUA)
-  writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_AQUA.tif", overwrite = TRUE)
   BBB <- lapply(filenames_AQUA, raster_irregular)
   
   
 }
 }
+
+
+########################################################################################
+########################################################################################
+# make a stack raster  MODIS-AQUA ------------------------------------------------------
+########################################################################################
+########################################################################################
+
+# AQUA ##-------------------------------------------------------------------------
+setwd("F:/Historical_DUST")
+main <- getwd()
+list_directories <- dir(pattern = "MODIS_AQUA")
+
+all_rasters <- stack()    # inizialise the raster stack
+ref_raster_AQUA <- raster("F:/Historical_DUST/MODIS_TERRA_2004/002/002.tif")
+plot(ref_raster_AQUA)
+
+k <- 1
+
+
+for (k in 1:length(list_directories)) {
+  setwd(paste0(main,"/",list_directories[k]))
+  wd_AOD <- setwd(paste0(main,"/",list_directories[k]))
+  getwd()
+  
+  
+  # list directories
+  DAYS_AQUA <- str_sub(list.dirs(), start = 3, end = -1)
+  DAYS_AQUA <- DAYS_AQUA[-1]
+  
+  i <- 2
+  
+  for (i in 1:length(DAYS_AQUA)) {
+    
+    date <- DAYS_AQUA[i]
+    setwd(paste0(wd_AOD,"/",DAYS_AQUA[i]))
+    
+    filenames_AQUA <- list.files(pattern = ".tif$")
+    
+    # make a raster stack ############
+    
+    r <- raster(filenames_AQUA)
+    r = projectRaster(r, ref_raster_AQUA)
+    plot(r)
+    all_rasters<- stack(all_rasters,r)
+    
+  }
+  
+}
+
+
+# save the raster stack with all the MAIAC data at 1km resolution
+writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_AQUA.tif" , options= "INTERLEAVE=BAND", overwrite=T)
+
 
 
   
