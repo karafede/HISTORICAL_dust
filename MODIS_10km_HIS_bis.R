@@ -517,7 +517,7 @@ for (k in 1:length(list_directories)) {
     r = projectRaster(r, ref_raster_TERRA)
     plot(r)
     all_rasters<- stack(all_rasters,r)
-
+    remove(r)
   }
   
 }
@@ -626,6 +626,8 @@ for (i in 1:length(DAYS_AQUA)) {
 }
 
 
+BBB <- stack("F:/Historical_DUST/all_DAYS_TERRA.tif")
+
 ########################################################################################
 ########################################################################################
 # make a stack raster  MODIS-AQUA ------------------------------------------------------
@@ -669,6 +671,7 @@ for (k in 1:length(list_directories)) {
     r = projectRaster(r, ref_raster_AQUA)
     plot(r)
     all_rasters<- stack(all_rasters,r)
+    remove(r)
     
   }
   
@@ -678,6 +681,8 @@ for (k in 1:length(list_directories)) {
 # save the raster stack with all the MAIAC data at 1km resolution
 writeRaster(all_rasters, "F:/Historical_DUST/all_DAYS_AQUA.tif" , options= "INTERLEAVE=BAND", overwrite=T)
 
+getwd()
+AAA <- stack("F:/Historical_DUST/all_DAYS_AQUA.tif")
 
 
   
