@@ -16,6 +16,7 @@ source("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/DUST SEVIRI/R_scripts/extract_pnt
 # load location of airport in the UAE
 
 sites_Airports_UAE <- read.csv("F:/Historical_DUST/Airport_Locations_UAE.csv")
+sites_Airports_UAE <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/Airport_Locations_UAE.csv")
 
 
 
@@ -138,6 +139,12 @@ library(reshape2)
 
 extracted_SUM_DUST_I_Method <- read.csv("F:/Historical_DUST/extracted_SUM_DAILY_DUST_UAE_Airports_I_Method.csv")
 extracted_SUM_DUST_II_Method <- read.csv("F:/Historical_DUST/extracted_SUM_DAILY_DUST_UAE_Airports_II_Method.csv")
+
+extracted_SUM_DUST_I_Method <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/extracted_SUM_DAILY_DUST_UAE_Airports_I_Method.csv")
+extracted_SUM_DUST_II_Method <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/extracted_SUM_DAILY_DUST_UAE_Airports_II_Method.csv")
+
+
+
 names(extracted_SUM_DUST_I_Method)[names(extracted_SUM_DUST_I_Method) == 'SUM_DAILY_DUST'] <- 'SUM_DAILY_DUST_I_meth'
 names(extracted_SUM_DUST_II_Method)[names(extracted_SUM_DUST_II_Method) == 'SUM_DAILY_DUST'] <- 'SUM_DAILY_DUST_II_meth'
 
@@ -245,6 +252,7 @@ plot
 ##############################################################################
 
 output_folder <- "F:/Historical_DUST/plots/"
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/"
 
 
 png(paste0(output_folder,"Hours_of_dust_comparisons_methodologies.png"), width = 2000, height = 1000,
@@ -281,12 +289,60 @@ plot
 ##################
 
 output_folder <- "F:/Historical_DUST/plots/"
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/"
 
 png(paste0(output_folder,"Hours_of_dust_I_Method.png"), width = 2000, height = 1000,
     units = "px", pointsize = 50,
     bg = "white", res = 200)
 print(plot)
 dev.off()
+
+
+
+#######################################
+## forecasting with Neural Network ####
+#######################################
+
+
+library(forecast)
+library(xts)
+
+# make a time-series with dust data
+
+# filter data for only one station #####
+all_DUST_SUM_ABU <- all_DUST_SUM %>%
+  filter(station == "ABU DHABI INTL")
+
+# TS_data <- ts(all_DUST_SUM_ABU$SUM_DAILY_DUST_I_meth, start=c(2004, 3, 18), end=c(2017, 12, 18), frequency=365)
+TS_data <- xts(all_DUST_SUM_ABU$SUM_DAILY_DUST_I_meth, as.Date(all_DUST_SUM_ABU$DateTime))
+str(TS_data)
+plot(TS_data)
+
+plot <- ggplot(all_DUST_SUM_ABU, aes(DateTime, SUM_DAILY_DUST_I_meth)) +
+  theme_bw() +
+  geom_line(aes(y = SUM_DAILY_DUST_II_meth, col = "SUM_DAILY_DUST_II_meth"), alpha=1, col="black") +
+  # stat_smooth(method = "lm") +
+  ylab(expression(paste("Daily duration of Dust (hours)"))) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=8, colour = "black", face="bold")) +
+  theme(axis.title.y = element_text(face="bold", colour="black", size=15),
+        axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
+  scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y"))
+#  ylim(0, 100)
+plot
+
+
+
+# model data with a NEURAL NETWORK algorithm
+(fit <- nnetar(TS_data, lambda=0.5))
+
+sim <- ts(matrix(0, nrow=2, ncol=2), start=end(TS_data)[1]+1)
+
+for(i in seq(2))
+  sim[,i] <- simulate(fit, nsim=2)
+
+library(ggplot2)
+autoplot(TS_data) + forecast::autolayer(sim)
 
 
 ###########################
