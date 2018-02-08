@@ -205,6 +205,75 @@ str(all_DUST_MODIS)
 ######################################
 # plot hourly data AQUA and TERRA ####
 ######################################
+# library(tidyr)
+
+# calculate the mean for each station and subtract this from the data
+
+# calculate mean value of all MODIS data
+# spread_AQUA <- spread(all_DUST_MODIS[1:3], station, DAILY_AOD_AQUA)
+# str(spread_AQUA)
+# MODIS_TERRA <- all_DUST_MODIS %>%
+#   dplyr::select(station,
+#          DateTime,
+#          DAILY_AOD_TERRA)
+# spread_TERRA <- spread(MODIS_TERRA , station, DAILY_AOD_TERRA)
+# str(spread_TERRA)
+# 
+# # calculate mean value for each column
+# mean_AQUA <- colMeans(spread_AQUA[-1], na.rm = TRUE)
+# mean_TERRA <- colMeans(spread_TERRA[-1], na.rm = TRUE)
+# 
+# # attach mean to the last line of the data frame (remove DateTime)
+# spread_AQUA <- rbind(spread_AQUA[-1], mean_AQUA)
+# spread_TERRA <- rbind(spread_TERRA[-1], mean_TERRA)
+# 
+# # subtract the last line from each element in the data frame
+# 
+# MODIS_AQUA <- NULL
+# MODIS_TERRA <- NULL
+# 
+# for(i in 1:nrow(spread_AQUA)){
+#   result = spread_AQUA[i,] - spread_AQUA[nrow(spread_AQUA),]
+#   MODIS_AQUA = rbind(MODIS_AQUA, result)
+#   print (result)
+# }
+# # remove last line
+# MODIS_AQUA <- MODIS_AQUA[1:nrow(MODIS_AQUA)-1, ]
+# 
+# for(i in 1:nrow(spread_TERRA)){
+#   result = spread_TERRA[i,] - spread_TERRA[nrow(spread_AQUA),]
+#   MODIS_TERRA = rbind(MODIS_TERRA, result)
+#   print (result)
+# }
+# 
+# # remove last line
+# MODIS_TERRA <- MODIS_TERRA[1:nrow(MODIS_TERRA)-1, ]
+# 
+# gather_AQUA <- gather(MODIS_AQUA, station, DAILY_AOD_AQUA)
+# gather_TERRA <- gather(MODIS_TERRA, station, DAILY_AOD_TERRA)
+# all_DUST_MODIS_bkg <- cbind(all_DUST_MODIS[2], gather_AQUA[,], gather_TERRA[2])
+# colnames(all_DUST_MODIS_bkg) <- c("DateTime", "station", "DAILY_AOD_AQUA", "DAILY_AOD_TERRA")
+
+
+
+# calculate mean value of all MODIS data
+all_DUST_MODIS_MEAN <- all_DUST_MODIS %>%
+  group_by(station) %>%
+  summarize(MEAN_AQUA = mean(DAILY_AOD_AQUA, na.rm=TRUE),
+            MEAN_TERRA = mean(DAILY_AOD_TERRA, na.rm=TRUE))
+
+# take the minimum
+all_DUST_MODIS_Min <- all_DUST_MODIS_MEAN %>%
+  summarize(min_AQUA = min(MEAN_AQUA),
+            min_TERRA = min(MEAN_TERRA))
+
+MIN_AQUA <- 0.3930954
+MIN_TERRA <- 0.3547656
+
+all_DUST_MODIS$DAILY_AOD_AQUA <- all_DUST_MODIS$DAILY_AOD_AQUA - MIN_AQUA
+all_DUST_MODIS$DAILY_AOD_TERRA <- all_DUST_MODIS$DAILY_AOD_TERRA - MIN_TERRA
+
+
 
 
 plot <- ggplot(all_DUST_MODIS, aes(DateTime, DAILY_AOD_AQUA)) +
@@ -258,6 +327,7 @@ all_DUST_MODIS_ANNUAL <- all_DUST_MODIS %>%
 
 str(all_DUST_MODIS_ANNUAL)
 
+# remove mean value #############################################
 
 ###########################################################
 ## ANNUAL plot ############################################
@@ -313,6 +383,14 @@ plot <- ggplot(all_DUST_MODIS_ANNUAL, aes(YEAR, ANNUAL_AVG_AQUA)) +
 plot
 
 
+# plot ###
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plot_MODIS/"
+
+png(paste0(output_folder,"Annual_AVERAGE_AOD_hist.png"), width = 2000, height = 1000,
+    units = "px", pointsize = 50,
+    bg = "white", res = 200)
+print(plot)
+dev.off()
 
 
 

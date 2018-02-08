@@ -17,10 +17,10 @@ METAR_data_2010_2018 <- read.table("METAAR_data_2010_2018.txt", skip = 1, sep="\
 
 # make table from single columns in the date
 Station_number_2004 <- as.data.frame(str_sub(METAR_data_2004_2010[,1], start = 1, end = -143))
-colnames(Station_number_2004) <- "station"
+colnames(Station_number_2004) <- "station_ID"
 
 Station_number_2010 <- as.data.frame(str_sub(METAR_data_2010_2018[,1], start = 1, end = -143))
-colnames(Station_number_2010) <- "station"
+colnames(Station_number_2010) <- "station_ID"
 
 DateTime_2004 <- as.data.frame(str_sub(METAR_data_2004_2010[,1], start = 13, end = -123))
 colnames(DateTime_2004) <- "DateTime"
@@ -67,7 +67,7 @@ METAR_DATA_2004_2018 <- rbind(METAR_data_2004_2010,
 str(METAR_DATA_2004_2018)
 
 
-# clean data 
+# clean data from special symbol ###################################################
 METAR_DATA_2004_2018$visby <- gsub("[\\****]", "", METAR_DATA_2004_2018$visby)
 METAR_DATA_2004_2018$visby <- as.numeric(METAR_DATA_2004_2018$visby)
 
@@ -79,12 +79,32 @@ METAR_DATA_2004_2018 <- METAR_DATA_2004_2018[!is.na(METAR_DATA_2004_2018$MET_CON
 METAR_DATA_2004_2018 <- METAR_DATA_2004_2018[!is.na(METAR_DATA_2004_2018$visby),]
 
 
+##############################
+#### station INFO ############
+##############################
 
 
+# load station info 
+station_info <- read.table("info_stations.txt", skip = 2, sep="\t")
 
-###########################
-# station INFO ############
-###########################
+# select station code and station name
+station_ID <- as.data.frame(str_sub(station_info[,1], start = 1, end = -149))
+colnames(station_ID) <- "station_ID"
+
+station_name <- as.data.frame(str_sub(station_info[,1], start = 13, end = -115))
+colnames(station_name) <- "station"
+
+station_info <- cbind(station_ID,
+                      station_name)
+
+
+# join info stations with data
+
+METAR_DATA_2004_2018 <- METAR_DATA_2004_2018 %>%
+  dplyr::left_join(station_info, by=("station_ID"))
+
+# remove lines wtih NA in the station column
+METAR_DATA_2004_2018 <- METAR_DATA_2004_2018[!is.na(METAR_DATA_2004_2018$station),]
 
 
 ###############################
@@ -103,11 +123,32 @@ METAR_DATA_2004_2018 <- METAR_DATA_2004_2018[!is.na(METAR_DATA_2004_2018$visby),
 
 # 30-35  Duststorm, sandstorm
 
+##########################################################################
+# assign 1 when there is dust event and 0 when there is no dust event ####
+##########################################################################
+
+METAR_DATA_2004_2018$DUST_flag <- ifelse(METAR_DATA_2004_2018$MET_CONDS %in% c(06, 07, 08, 09, 30:35), 1, 0)
 
 
-METAR_DATA_2004_2018_DUST <- METAR_DATA_2004_2018 %>%
-  filter(MET_CONDS %in% c(55, 97))
+# consider only 1 flag per hour
 
+METAR_DATA_2004_2018 <- METAR_DATA_2004_2018 %>%
+  mutate(Date = date(DateTime),
+         hour = hour(DateTime)) 
+
+METAR_DATA_2004_2018 <- METAR_DATA_2004_2018 %>%
+  group_by(station,
+           Date,
+           hour) %>%
+  summarize(DUST_flag = mean(DUST_flag))
+
+
+# daily sum of hourly data (dust event)
+
+METAR_DATA_2004_2018_DAILY <- METAR_DATA_2004_2018 %>%
+  group_by(station,
+           Date) %>%
+  summarize(DAILY_SUM = sum(DUST_flag))  # max value should be 24h
 
 
 ############################################
@@ -119,46 +160,23 @@ library(scales)
 library(reshape2)
 
 
-str(data_visibility)
-
-data_visibility$Date <- ymd(data_visibility$Date)
-
-str(data_visibility)
-
-
-data_visibility <- data_visibility %>%
-  dplyr::select(NAME,
-         Date,
-         HrMn,
-         Visby_meters)
-names(data_visibility)[names(data_visibility) == 'NAME'] <- 'station'
-
-# AVERAGED daily visibility
-data_visibility <- data_visibility %>%
-  group_by(station,
-           Date) %>%
-  summarize(DAILY_visby = mean(Visby_meters, na.rm = TRUE))
-  
-
-# remove some stations with poor data
-data_visibility <- data_visibility %>%
-  filter(!station %in% c("BUHASA", "ZIRKU",
-                         "ASH SHARIQAH SW","SIR ABU NAIR"))
+METAR_DATA_2004_2018_DAILY$Date <- as.POSIXct(METAR_DATA_2004_2018_DAILY$Date)
+str(METAR_DATA_2004_2018_DAILY)
 
 # plot daily VISIBILITY data
 
-plot <- ggplot(data_visibility, aes(Date, DAILY_visby)) +
+plot <- ggplot(METAR_DATA_2004_2018_DAILY, aes(Date, DAILY_SUM)) +
   theme_bw() +
-  geom_line(aes(y = DAILY_visby, col = "DAILY_visby"), alpha=1, col="black") +
+  geom_line(aes(y = DAILY_SUM, col = "DAILY_SUM"), alpha=1, col="black") +
  # stat_smooth(method = "loess") +
   facet_wrap(~ station) +
   theme(strip.text = element_text(size = 12)) + 
-  ylab(expression(paste("visibility (meters)"))) +
+  ylab(expression(paste("Duration of Dust (hours)"))) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold")) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=15),
-        axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) 
- # scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
+        axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
+ scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
 #  ylim(0, 100)
 plot
 
@@ -166,10 +184,10 @@ plot
 #### save plot ###############################################################
 ##############################################################################
 
-output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/visibility/plots/"
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/plots/"
 
 
-png(paste0(output_folder,"daily_visibility_2004_2017.png"), width = 2000, height = 1000,
+png(paste0(output_folder,"DAILY_dust_METAR_2004_2018.png"), width = 2000, height = 1000,
     units = "px", pointsize = 50,
     bg = "white", res = 200)
 print(plot)
@@ -182,14 +200,14 @@ dev.off()
 # aggregate data by YEAR ##
 ###########################
 
-data_visibility <- data_visibility %>%
+METAR_DATA_2004_2018_DAILY <- METAR_DATA_2004_2018_DAILY %>%
   mutate(YEAR = year(Date))
 
-data_visibility_YEAR <- data_visibility %>%
+METAR_DATA_YEAR <- METAR_DATA_2004_2018_DAILY %>%
   group_by(YEAR, station) %>%
-  summarize(ANNUAL_AVG_visby = mean(DAILY_visby, na.rm = TRUE))
+  summarize(ANNUAL_AVG = sum(DAILY_SUM, na.rm = TRUE))
 
-str(data_visibility_YEAR)
+str(METAR_DATA_YEAR)
 
 
 ###########################################################
@@ -197,13 +215,13 @@ str(data_visibility_YEAR)
 ###########################################################
 
 
-plot <- ggplot(data_visibility_YEAR, aes(YEAR, ANNUAL_AVG_visby)) +
+plot <- ggplot(METAR_DATA_YEAR, aes(YEAR, ANNUAL_AVG)) +
   theme_bw() +
-  geom_line(aes(y = ANNUAL_AVG_visby, col = "ANNUAL_AVG_visby"), alpha=1, col="black") +
+  geom_line(aes(y = ANNUAL_AVG, col = "ANNUAL_AVG"), alpha=1, col="black") +
   # stat_smooth(method = "loess") +
   facet_wrap(~ station) +
   theme(strip.text = element_text(size = 12)) + 
-  ylab(expression(paste("Annual Visibility"))) +
+  ylab(expression(paste("Duration of Dust (hours)"))) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold")) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=15),
@@ -217,13 +235,13 @@ plot
 #################################################################################################
 ##### bar plot ##################################################################################
 
-plot <- ggplot(data_visibility_YEAR, aes(YEAR, ANNUAL_AVG_visby)) +
+plot <- ggplot(METAR_DATA_YEAR, aes(YEAR, ANNUAL_AVG)) +
   theme_bw() +
   geom_bar(stat="identity") +
   facet_wrap(~ station) +
   stat_smooth(method = "lm", se = FALSE) +
   theme(strip.text = element_text(size = 12)) + 
-  ylab(expression(paste("Annual Visibility"))) +
+  ylab(expression(paste("Duration of Dust (hours)"))) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold")) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
@@ -233,13 +251,14 @@ plot
 
 
 # plot ###
-output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/visibility/plots/"
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/plots/"
 
-png(paste0(output_folder,"Annual_visibility_2004_2017.png"), width = 2000, height = 1000,
+png(paste0(output_folder,"Annual_DUST_METAR_2004_2018.png"), width = 2000, height = 1000,
     units = "px", pointsize = 50,
     bg = "white", res = 200)
 print(plot)
 dev.off()
 
-
+#####################################################################################################
+#####################################################################################################
 

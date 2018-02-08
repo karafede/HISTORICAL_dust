@@ -16,7 +16,7 @@ source("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/DUST SEVIRI/R_scripts/extract_pnt
 # load location of airport in the UAE
 
 sites_Airports_UAE <- read.csv("F:/Historical_DUST/Airport_Locations_UAE.csv")
-sites_Airports_UAE <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/Airport_Locations_UAE.csv")
+sites_Airports_UAE <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/Airport_Locations_UAE_new.csv")
 
 
 
@@ -162,21 +162,22 @@ extracted_SUM_DUST_II_Method$DateTime <- ymd(extracted_SUM_DUST_II_Method$DateTi
 extracted_SUM_DUST_I_Method_old <- extracted_SUM_DUST_I_Method %>%
   filter(DateTime >=  "2004-03-18" & DateTime <= "2011-06-30") %>%
 #  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/63)*100)
-  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/2.542))  # 61/24
+  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/2.542))  # 61/24,  max value should be 24h
 
 
 extracted_SUM_DUST_I_Method_recent <- extracted_SUM_DUST_I_Method %>%
   filter(DateTime >=  "2011-06-30") %>%
 #  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/96)*100) %>% 
-mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/4))
+mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/4))  # max value should be 24h
 
 
 extracted_SUM_DUST_I_Method <- rbind(extracted_SUM_DUST_I_Method_old,
                                      extracted_SUM_DUST_I_Method_recent)
 
+# average data if from the same station
 extracted_SUM_DUST_I_Method <- extracted_SUM_DUST_I_Method %>%
   group_by(station, DateTime) %>%
-  summarize(SUM_DAILY_DUST_I_meth = sum(SUM_DAILY_DUST_I_meth))
+  summarize(SUM_DAILY_DUST_I_meth = mean(SUM_DAILY_DUST_I_meth))
 
 
 
@@ -199,9 +200,10 @@ extracted_SUM_DUST_II_Method_recent <- extracted_SUM_DUST_II_Method %>%
 extracted_SUM_DUST_II_Method <- rbind(extracted_SUM_DUST_II_Method_old,
                                      extracted_SUM_DUST_II_Method_recent)
 
+# average data if from the same station
 extracted_SUM_DUST_II_Method <- extracted_SUM_DUST_II_Method %>%
   group_by(station, DateTime) %>%
-  summarize(SUM_DAILY_DUST_II_meth = sum(SUM_DAILY_DUST_II_meth))
+  summarize(SUM_DAILY_DUST_II_meth = mean(SUM_DAILY_DUST_II_meth))
 
 
 head(extracted_SUM_DUST_I_Method)
@@ -220,8 +222,6 @@ all_DUST_SUM <- extracted_SUM_DUST_I_Method %>%
 all_DUST_SUM <- all_DUST_SUM %>%
   filter(!station %in% c("DELMA", "DUBAI", "ZIRKU",
                          "ASH SHARIQAH SW", "RAS-AL-KHAIMA","SIR ABU NAIR", "DUBAI MINHAD AB"))
-
-
 
 
 
@@ -246,6 +246,7 @@ plot <- ggplot(all_DUST_SUM, aes(DateTime, SUM_DAILY_DUST_I_meth)) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
 #  ylim(0, 100)
 plot
+
 
 
 #### save plot ###############################################################
@@ -405,6 +406,7 @@ plot
 
 # plot ###
 output_folder <- "F:/Historical_DUST/plots/"
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/"
 
 png(paste0(output_folder,"Annual_Hours_of_dust_I_Method.png"), width = 2000, height = 1000,
     units = "px", pointsize = 50,
@@ -432,6 +434,7 @@ plot
 
 # plot ###
 output_folder <- "F:/Historical_DUST/plots/"
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/"
 
 png(paste0(output_folder,"Annual_Hours_of_dust_II_Method.png"), width = 2000, height = 1000,
     units = "px", pointsize = 50,
@@ -462,6 +465,7 @@ plot
 
 # plot ###
 output_folder <- "F:/Historical_DUST/plots/"
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/"
 
 png(paste0(output_folder,"Annual_Hours_of_dust_I_and_II_Method.png"), width = 2000, height = 1000,
     units = "px", pointsize = 50,
@@ -494,6 +498,7 @@ dev.off()
   
   # plot ###
   output_folder <- "F:/Historical_DUST/plots/"
+  output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/"
   
   png(paste0(output_folder,"Annual_Hours_of_dust_AVG.png"), width = 2000, height = 1000,
       units = "px", pointsize = 50,
