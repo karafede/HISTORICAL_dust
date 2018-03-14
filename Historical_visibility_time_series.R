@@ -11,6 +11,8 @@ library(stringr)
 
 setwd("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data")
 
+# https://www7.ncdc.noaa.gov/CDO/cdopoemain.cmd?datasetabbv=DS3505&countryabbv=&georegionabbv=&resolution=40
+
 # data_visibility <- read_csv("visibility_data_2004_2017.csv")
 METAR_data_2004_2010 <- read.table("METAAR_data_2004_2010.txt", skip = 1, sep="\t")
 METAR_data_2010_2018 <- read.table("METAAR_data_2010_2018.txt", skip = 1, sep="\t")

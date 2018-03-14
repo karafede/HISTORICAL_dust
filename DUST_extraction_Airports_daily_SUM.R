@@ -157,18 +157,18 @@ extracted_SUM_DUST_II_Method$DateTime <- ymd(extracted_SUM_DUST_II_Method$DateTi
 
 ##### I method ######################################################
 # normalize according to the number of maximum scenes
-# calculate number of hours with dust events
+# calculate number of daily hours with dust events
 
 extracted_SUM_DUST_I_Method_old <- extracted_SUM_DUST_I_Method %>%
   filter(DateTime >=  "2004-03-18" & DateTime <= "2011-06-30") %>%
 #  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/63)*100)
-  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/2.542))  # 61/24,  max value should be 24h
+  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/2.542))  # 61/24,  max value should be 24h (DAILY) (hours of dust observations)
 
 
 extracted_SUM_DUST_I_Method_recent <- extracted_SUM_DUST_I_Method %>%
   filter(DateTime >=  "2011-06-30") %>%
 #  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/96)*100) %>% 
-mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/4))  # max value should be 24h
+mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/4))  # max value should be 24h (DAILY) (hours of dust observations)
 
 
 extracted_SUM_DUST_I_Method <- rbind(extracted_SUM_DUST_I_Method_old,
@@ -188,14 +188,14 @@ extracted_SUM_DUST_I_Method <- extracted_SUM_DUST_I_Method %>%
 extracted_SUM_DUST_II_Method_old <- extracted_SUM_DUST_II_Method %>%
   filter(DateTime >=  "2004-03-18" & DateTime <= "2011-06-30") %>%
   #  mutate(SUM_DAILY_DUST_II_meth = (SUM_DAILY_DUST_II_meth/63)*100)
-  mutate(SUM_DAILY_DUST_II_meth = (SUM_DAILY_DUST_II_meth/4)) # 63 scenes per day every 15 minutes
+  mutate(SUM_DAILY_DUST_II_meth = (SUM_DAILY_DUST_II_meth/4)) # 63 scenes per day every 15 minutes (hours of dust observations)
 
 
 extracted_SUM_DUST_II_Method_recent <- extracted_SUM_DUST_II_Method %>%
   filter(DateTime >=  "2011-06-30") %>%
   #  mutate(SUM_DAILY_DUST_I_meth = (SUM_DAILY_DUST_I_meth/96)*100) %>% 
-  mutate(SUM_DAILY_DUST_II_meth = (SUM_DAILY_DUST_II_meth/4)) # 96 scenes per day every 15 minutes
-
+  mutate(SUM_DAILY_DUST_II_meth = (SUM_DAILY_DUST_II_meth/4)) # 96 scenes per day every 15 minutes (hours of dust observations)
+ 
 
 extracted_SUM_DUST_II_Method <- rbind(extracted_SUM_DUST_II_Method_old,
                                      extracted_SUM_DUST_II_Method_recent)
@@ -350,6 +350,8 @@ autoplot(TS_data) + forecast::autolayer(sim)
 # aggregate data by YEAR ##
 ###########################
 
+# sum all DAILY data (counts)
+
 all_DUST_SUM <- all_DUST_SUM %>%
   mutate(YEAR = year(DateTime))
 
@@ -448,9 +450,11 @@ dev.off()
 all_SUM_data <- melt(all_DUST_SUM_ANNUAL, id=c("YEAR","station"))
 str(all_SUM_data)
 
+
+
 plot <- ggplot(all_SUM_data, aes(YEAR, value, fill = variable)) +
   theme_bw() +
-  geom_bar(stat="identity") +
+  geom_bar(stat="identity", width = 1, position = "dodge") +
   # geom_bar(position ="dodge") +
   facet_wrap(~ station) +
   theme(strip.text = element_text(size = 12)) + 
@@ -459,6 +463,7 @@ plot <- ggplot(all_SUM_data, aes(YEAR, value, fill = variable)) +
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold")) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) 
+# scale_x_date(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
 #  ylim(-0.5, 0.5)
 plot
 
