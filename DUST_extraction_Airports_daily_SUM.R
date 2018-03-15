@@ -53,8 +53,34 @@ TS <- as.Date(DATE)
 class(TS)
 
 
- SUM_DAILY_DUST_raster <- raster(filenames[i])
- plot(SUM_DAILY_DUST_raster)
+ r <- raster(filenames[i])
+ plot(r)
+
+  # add conditions to filter out only GOOD maps!!!!
+ values(r)[values(r) < 0] = NA
+ 
+ # check if the raster is OK and not saturated
+ if (maxValue(r[[1]])==53) {
+   r <- reference
+ } else {
+   r <- raster(filenames_YEAR[j])
+   r = projectRaster(r, reference)
+ }
+ 
+ 
+ max <- maxValue(r[[1]])
+ n <- (values(r) == max)
+ z <- length(n[n==TRUE])
+ # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
+ if (z > 16960/2) {
+   r <- reference
+ } else {
+   r <- raster(filenames_YEAR[j])
+   r = projectRaster(r, reference)
+ }
+ 
+ 
+ SUM_DAILY_DUST_raster <- r
 
   EXTRACTED_DUST <- extract_points(SUM_DAILY_DUST_raster, sites_Airports_UAE)
   extracted_SUM_DUST = rbind(extracted_SUM_DUST, EXTRACTED_DUST)    
@@ -102,8 +128,34 @@ for (i in 1:length(filenames)) {
   class(TS)
   
   
-  SUM_DAILY_DUST_raster <- raster(filenames[i])
-  plot(SUM_DAILY_DUST_raster)
+  r <- raster(filenames[i])
+  plot(r)
+  
+  # add conditions to filter out only GOOD maps!!!!
+  values(r)[values(r) < 0] = NA
+  
+  # check if the raster is OK and not saturated
+  if (maxValue(r[[1]])==53) {
+    r <- reference
+  } else {
+    r <- raster(filenames_YEAR[j])
+    r = projectRaster(r, reference)
+  }
+  
+  
+  max <- maxValue(r[[1]])
+  n <- (values(r) == max)
+  z <- length(n[n==TRUE])
+  # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
+  if (z > 16960/2) {
+    r <- reference
+  } else {
+    r <- raster(filenames_YEAR[j])
+    r = projectRaster(r, reference)
+  }
+  
+  
+  SUM_DAILY_DUST_raster <- r
   
   EXTRACTED_DUST <- extract_points(SUM_DAILY_DUST_raster, sites_Airports_UAE)
   extracted_SUM_DUST = rbind(extracted_SUM_DUST, EXTRACTED_DUST)    
