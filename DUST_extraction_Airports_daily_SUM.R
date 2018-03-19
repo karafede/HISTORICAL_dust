@@ -189,8 +189,8 @@ library(scales)
 library(reshape2)
 
 
-extracted_SUM_DUST_I_Method <- read.csv("F:/Historical_DUST/extracted_SUM_DAILY_DUST_UAE_Airports_I_Method.csv")
-extracted_SUM_DUST_II_Method <- read.csv("F:/Historical_DUST/extracted_SUM_DAILY_DUST_UAE_Airports_II_Method.csv")
+# extracted_SUM_DUST_I_Method <- read.csv("F:/Historical_DUST/extracted_SUM_DAILY_DUST_UAE_Airports_I_Method.csv")
+# extracted_SUM_DUST_II_Method <- read.csv("F:/Historical_DUST/extracted_SUM_DAILY_DUST_UAE_Airports_II_Method.csv")
 
 extracted_SUM_DUST_I_Method <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/extracted_SUM_DAILY_DUST_UAE_Airports_I_Method.csv")
 extracted_SUM_DUST_II_Method <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/extracted_SUM_DAILY_DUST_UAE_Airports_II_Method.csv")

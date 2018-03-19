@@ -37,45 +37,61 @@ res(reference)
 #### II Method Met France Original ##############
 #################################################
 
-output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE"
+output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS"
 
-# load data from "2004-03-18" to "2011-06-30"
-# setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_old")
+## load data from "2004-03-18" to "2011-06-30"
+setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_old")
 
-# load data from "2011-07-01" to "2017"
-setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_new")
+## load data from "2011-07-01" to "2017"
+# setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_new")
 
 filenames <- list.files(pattern = ".tif$")
 
 # LIST filenames containing a specifc YEAR
 
 # LIST_YEARS <- list(2005, 2006, 2007, 2008, 2009)
-# LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
-LIST_YEARS <- seq(from = 2014, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
+# LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
+LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
 
 
-# LIST_YEARS <- 2011
-# i <- 2013
+# LIST_YEARS <- 2010
+# i <- 2010
 # j <- 190
 
 
-for (i in 2014) {    # just 1 year
+for (i in 2011) {    # just 1 year
 # for (i in LIST_YEARS) {
-filenames_YEAR <- list.files(pattern = c(i, ".tif$"))
-# force to list max 365 days
-filenames_YEAR <- filenames_YEAR[1:365]
-str(filenames_YEAR)
-# remove NAs
-filenames_YEAR <- na.omit(filenames_YEAR)
-filenames_YEAR <- as.character(filenames_YEAR)
+  filenames_YEAR <- list.files(pattern = c(i, ".tif$"))
+  # force to list max 365 days
+  filenames_YEAR <- filenames_YEAR[1:365]
+  str(filenames_YEAR)
+  # remove NAs
+  filenames_YEAR <- na.omit(filenames_YEAR)
+  filenames_YEAR <- as.character(filenames_YEAR)
+
+# extract date from filenames 
+year <- str_sub(filenames_YEAR, start = 1, end = -35)
+month <- str_sub(filenames_YEAR, start = 5, end = -33)
+day <- str_sub(filenames_YEAR, start = 7, end = -31)
+Date <- paste0(year,"-", month, "-", day)
+Date <- as.Date(Date)
+
+
 LIST_YEARS <- i
-all_rasters <- stack()    # stack ALL HOURS together in an unique raster
+
+all_rasters_winter <- stack()    # stack ALL HOURS together in an unique raster
+all_rasters_spring <- stack()
+all_rasters_summer <- stack()
+all_rasters_fall <- stack()
+
+
      for (j in 1:length(filenames_YEAR)) {
+       
        # daily raster
        r <- raster(filenames_YEAR[j])
        # # reproject each raster with the same extent and resolution of the reference raster above
        r = projectRaster(r, reference)
-
+      
        
        # check if the raster is OK and not saturated
        if (maxValue(r[[1]])==53) {
@@ -84,8 +100,7 @@ all_rasters <- stack()    # stack ALL HOURS together in an unique raster
          r <- raster(filenames_YEAR[j])
          r = projectRaster(r, reference)
        }
-       
-       
+        
        max <- maxValue(r[[1]])
        n <- (values(r) == max)
        z <- length(n[n==TRUE])
@@ -102,22 +117,84 @@ all_rasters <- stack()    # stack ALL HOURS together in an unique raster
        
        ###### from  "2004-03-18" to "2011-06-30" #################################################
        # 61 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
-       # r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
+       r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
        # plot(r)
        
        ###### from  "2011-07-01" 20110701_II_Method_M_II_Method_sum  (181 file) ###################
        # 96 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
-       r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
+       # r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
        # plot(r)
        
+       ##########################################################
+       # get the month and classify for the season #############
+       month <- str_sub(filenames_YEAR[j], start = 5, end = -33)
+       month <- as.numeric(month)
+       year <- str_sub(filenames_YEAR[j], start = 1, end = -35)
+       year <- as.numeric(year)
        
+       if (month %in% c(1:2)) {
+         r <- raster(filenames_YEAR[j])
+         r <- projectRaster(r, reference)
+         r_winter <- r 
+         season <- "WINTER"
+       } else if (month==12) {
+         r <- raster(filenames_YEAR[j])
+         r <- projectRaster(r, reference)
+         r_winter <- r 
+         season <- "WINTER"
+       } else if (month %in% c(3:5)) {
+         r <- raster(filenames_YEAR[j])
+         r <- projectRaster(r, reference)
+         r_spring <- r
+         season <- "SPRING"
+       } else if (month %in% c(6:8)) {
+         r <- raster(filenames_YEAR[j])
+         r <- projectRaster(r, reference)
+         r_summer <- r
+         season <- "SUMMER"
+       } else if (month %in% c(9:11)) {
+         r <- raster(filenames_YEAR[j])
+         r <- projectRaster(r, reference)
+         r_fall <- r
+         season <- "FALL"
+       }
        
-       all_rasters<- stack(all_rasters,r)
-       sum_rasters <- sum(all_rasters, na.rm = TRUE)
-       plot(sum_rasters)
-       writeRaster(sum_rasters, paste0(output_dir,"/", LIST_YEARS, "_YEARLY_24h_SUM_II_Method.tif") , options= "INTERLEAVE=BAND", overwrite=T)
-       # clear memory
-       gc()
+       ########################################
+       
+       if(exists("r_winter")){
+         r <- r_winter
+         all_rasters_winter <- stack(all_rasters_winter,r)
+         sum_rasters_winter <- sum(all_rasters_winter, na.rm = TRUE)
+         writeRaster(sum_rasters_winter, paste0(output_dir,"/", season, "_", year, "_24h_SUM_II_Method.tif") , options= "INTERLEAVE=BAND", overwrite=T)
+         remove(r_winter)
+         # clear memory
+         gc()
+       } else if (exists("r_spring")) {
+         r <- r_spring
+         all_rasters_spring <- stack(all_rasters_spring,r)
+         sum_rasters_spring <- sum(all_rasters_spring, na.rm = TRUE)
+         writeRaster(sum_rasters_spring, paste0(output_dir,"/", season, "_", year, "_24h_SUM_II_Method.tif"), options= "INTERLEAVE=BAND", overwrite=T)
+         remove(r_spring)
+         # clear memory
+         gc()
+       } else if (exists("r_summer")) {
+         r <- r_summer
+         all_rasters_summer <- stack(all_rasters_summer,r)
+         sum_rasters_summer <- sum(all_rasters_summer, na.rm = TRUE)
+         writeRaster(sum_rasters_summer, paste0(output_dir,"/", season, "_", year, "_24h_SUM_II_Method.tif"), options= "INTERLEAVE=BAND", overwrite=T)
+         remove(r_summer)
+         # clear memory
+         gc()
+       } else if (exists("r_fall"))  {
+         r <- r_fall
+         all_rasters_fall <- stack(all_rasters_fall,r)
+         sum_rasters_fall <- sum(all_rasters_fall, na.rm = TRUE)
+         writeRaster(sum_rasters_fall, paste0(output_dir,"/", season, "_", year, "_24h_SUM_II_Method.tif"), options= "INTERLEAVE=BAND", overwrite=T)
+         remove(r_fall)
+         # clear memory
+         gc()
+       }
+       
      }
 }
 
@@ -126,33 +203,94 @@ all_rasters <- stack()    # stack ALL HOURS together in an unique raster
 ###################################################################################################
 
 # sum rasters for the YEAR 2011, "old" and "new"
-r_2011_old <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/2011_YEARLY_24h_SUM_II_Method_old.tif")
-r_2011_new <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/2011_YEARLY_24h_SUM_II_Method_new.tif")
-r_2011 <- sum(r_2011_old, r_2011_new)
-plot(r_2011)
-writeRaster(r_2011, "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/2011_YEARLY_24h_SUM_II_Method_new.tif" , options= "INTERLEAVE=BAND", overwrite=T)
+r_2011_old_winter <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/WINTER_2011_24h_SUM_II_Method_old.tif")
+r_2011_old_summer <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/SUMMER_2011_24h_SUM_II_Method_old.tif")
 
+r_2011_new_winter <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/WINTER_2011_24h_SUM_II_Method_new.tif")
+r_2011_new_summer <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/SUMMER_2011_24h_SUM_II_Method_new.tif")
 
-# make a raster stack with all the YEARLY 24h sum images
+r_2011_winter <- sum(r_2011_old_winter, r_2011_new_winter)
+plot(r_2011_winter)
+writeRaster(r_2011_winter, "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/WINTER_2011_24h_SUM_II_Method.tif" , options= "INTERLEAVE=BAND", overwrite=T)
 
-output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE"
-setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE")
+r_2011_summer <- sum(r_2011_old_summer, r_2011_new_summer)
+plot(r_2011_summer)
+writeRaster(r_2011_summer, "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/SUMMER_2011_24h_SUM_II_Method.tif" , options= "INTERLEAVE=BAND", overwrite=T)
+
+####################################################################
+# make a raster stack with all the SEASONAL 24h sum images #########
+####################################################################
+
+output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS"
+setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS")
 # list .tif files
 filenames <- list.files(pattern = ".tif$")
 
 # make an empty raster
-all_rasters <- stack()    # stack ALL HOURS together in an unique raster
+all_rasters_WINTER <- stack()    # stack ALL HOURS together in an unique raster
+all_rasters_SPRING <- stack() 
+all_rasters_SUMMER <- stack() 
+all_rasters_FALL <- stack() 
 
-for (i in 1:length(filenames)) {
-  r <- raster(filenames[i])
+filenames_WINTER <- list.files(pattern = c("WINTER"))
+filenames_SPRING <- list.files(pattern = c("SPRING"))
+filenames_SUMMER <- list.files(pattern = c("SUMMER"))
+filenames_FALL <- list.files(pattern = c("FALL"))
+
+
+# WINTER ##
+for (i in 1:length(filenames_WINTER)) {
+  r <- raster(filenames_WINTER[i])
   values(r)[values(r) < 0] = NA
-  all_rasters <- stack(all_rasters,r)
+  all_rasters_WINTER <- stack(all_rasters_WINTER,r)
   # crop over UAE
-  all_rasters <- crop(all_rasters, extent(shp_UAE))
-  all_rasters <- mask(all_rasters, shp_UAE)  
+  all_rasters_WINTER <- crop(all_rasters_WINTER, extent(shp_UAE))
+  all_rasters_WINTER <- mask(all_rasters_WINTER, shp_UAE)  
 }
  
-writeRaster(all_rasters, paste0(output_dir,"/", "STACK_YEARLY_24h_SUM_II_Method.tif") , options= "INTERLEAVE=BAND", overwrite=T)
+writeRaster(all_rasters_WINTER, paste0(output_dir,"/", "STACK_WINTER_24h_SUM_II_Method.tif") , options= "INTERLEAVE=BAND", overwrite=T)
+
+
+# SPRING ##
+for (i in 1:length(filenames_SPRING)) {
+  r <- raster(filenames_SPRING[i])
+  values(r)[values(r) < 0] = NA
+  all_rasters_SPRING <- stack(all_rasters_SPRING,r)
+  # crop over UAE
+  all_rasters_SPRING <- crop(all_rasters_SPRING, extent(shp_UAE))
+  all_rasters_SPRING <- mask(all_rasters_SPRING, shp_UAE)  
+}
+
+writeRaster(all_rasters_SPRING, paste0(output_dir,"/", "STACK_SPRING_24h_SUM_II_Method.tif") , options= "INTERLEAVE=BAND", overwrite=T)
+
+
+# SUMMER ##
+for (i in 1:length(filenames_SUMMER)) {
+  r <- raster(filenames_SUMMER[i])
+  values(r)[values(r) < 0] = NA
+  all_rasters_SUMMER <- stack(all_rasters_SUMMER,r)
+  # crop over UAE
+  all_rasters_SUMMER <- crop(all_rasters_SUMMER, extent(shp_UAE))
+  all_rasters_SUMMER <- mask(all_rasters_SUMMER, shp_UAE)  
+}
+
+writeRaster(all_rasters_SUMMER, paste0(output_dir,"/", "STACK_SUMMER_24h_SUM_II_Method.tif") , options= "INTERLEAVE=BAND", overwrite=T)
+
+
+
+# FALL ##
+for (i in 1:length(filenames_FALL)) {
+  r <- raster(filenames_FALL[i])
+  values(r)[values(r) < 0] = NA
+  all_rasters_FALL <- stack(all_rasters_FALL,r)
+  # crop over UAE
+  all_rasters_FALL <- crop(all_rasters_FALL, extent(shp_UAE))
+  all_rasters_FALL <- mask(all_rasters_FALL, shp_UAE)  
+}
+
+writeRaster(all_rasters_FALL, paste0(output_dir,"/", "STACK_FALL_24h_SUM_II_Method.tif") , options= "INTERLEAVE=BAND", overwrite=T)
+
+
 
 ###########################################################
 # map to be exported ######################################
@@ -269,7 +407,7 @@ DUST_images <- stack("STACK_YEARLY_24h_SUM_II_Method.tif")
 #### I Method EUMETSAT ##########################
 #################################################
 
-output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT"
+output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS"
 
 # load data from "2004-03-18" to "2011-06-30"
 # setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_I_Method_old")
@@ -280,16 +418,18 @@ filenames <- list.files(pattern = ".tif$")
 
 # LIST filenames containing a specifc YEAR
 
-# LIST_YEARS <- list(2004, 2005, 2006, 2007, 2008, 2009)
+# LIST_YEARS <- list(2005, 2006, 2007, 2008, 2009)
+LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
 # LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
-LIST_YEARS <- seq(from = 2014, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
 
-# LIST_YEARS <- 2011
-# i <- 2014
-# j <- 1
 
-for (i in 2015) {    # just 1 year
-# for (i in LIST_YEARS) {
+# LIST_YEARS <- 2010
+# i <- 2010
+# j <- 190
+
+
+# for (i in 2010) {    # just 1 year
+for (i in LIST_YEARS) {
   filenames_YEAR <- list.files(pattern = c(i, ".tif$"))
   # force to list max 365 days
   filenames_YEAR <- filenames_YEAR[1:365]
@@ -297,13 +437,30 @@ for (i in 2015) {    # just 1 year
   # remove NAs
   filenames_YEAR <- na.omit(filenames_YEAR)
   filenames_YEAR <- as.character(filenames_YEAR)
+  
+  # extract date from filenames 
+  year <- str_sub(filenames_YEAR, start = 1, end = -22)
+  month <- str_sub(filenames_YEAR, start = 5, end = -20)
+  day <- str_sub(filenames_YEAR, start = 7, end = -18)
+  Date <- paste0(year,"-", month, "-", day)
+  Date <- as.Date(Date)
+  
+  
   LIST_YEARS <- i
-  all_rasters <- stack()    # stack ALL HOURS together in an unique raster
+  
+  all_rasters_winter <- stack()    # stack ALL HOURS together in an unique raster
+  all_rasters_spring <- stack()
+  all_rasters_summer <- stack()
+  all_rasters_fall <- stack()
+  
+  
   for (j in 1:length(filenames_YEAR)) {
+    
     # daily raster
     r <- raster(filenames_YEAR[j])
     # # reproject each raster with the same extent and resolution of the reference raster above
-    r <- projectRaster(r, reference)
+    r = projectRaster(r, reference)
+    
     
     # check if the raster is OK and not saturated
     if (maxValue(r[[1]])==53) {
@@ -327,37 +484,102 @@ for (i in 2015) {    # just 1 year
     # replace vlaues <- 0 into 0 or NA
     values(r)[values(r) < 0] = NA
     
-    
     ###### from  "2004-03-18" to "2011-06-30" #################################################
     # 61 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
     # r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
     # plot(r)
     
-    ###### from  "2011-07-01"  20110701_I_Method_sum  (181 file)################################
+    ###### from  "2011-07-01" 20110701_II_Method_M_II_Method_sum  (181 file) ###################
     # 96 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
     r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
     # plot(r)
-  
     
-    all_rasters<- stack(all_rasters,r)
-    sum_rasters <- sum(all_rasters, na.rm = TRUE)
-    plot(sum_rasters)
-    writeRaster(sum_rasters, paste0(output_dir,"/", LIST_YEARS, "_YEARLY_24h_SUM_I_Method.tif") , options= "INTERLEAVE=BAND", overwrite=T)
-    # clear memory
-    gc()
+    ##########################################################
+    # get the month and classify for the season #############
+    month <- str_sub(filenames_YEAR[j], start = 5, end = -20)
+    month <- as.numeric(month)
+    year <- str_sub(filenames_YEAR[j], start = 1, end = -22)
+    year <- as.numeric(year)
+    
+    if (month %in% c(1:2)) {
+      r <- raster(filenames_YEAR[j])
+      r <- projectRaster(r, reference)
+      r_winter <- r 
+      season <- "WINTER"
+    } else if (month==12) {
+      r <- raster(filenames_YEAR[j])
+      r <- projectRaster(r, reference)
+      r_winter <- r 
+      season <- "WINTER"
+    } else if (month %in% c(3:5)) {
+      r <- raster(filenames_YEAR[j])
+      r <- projectRaster(r, reference)
+      r_spring <- r
+      season <- "SPRING"
+    } else if (month %in% c(6:8)) {
+      r <- raster(filenames_YEAR[j])
+      r <- projectRaster(r, reference)
+      r_summer <- r
+      season <- "SUMMER"
+    } else if (month %in% c(9:11)) {
+      r <- raster(filenames_YEAR[j])
+      r <- projectRaster(r, reference)
+      r_fall <- r
+      season <- "FALL"
+    }
+    
+    ########################################
+    
+    if(exists("r_winter")){
+      r <- r_winter
+      all_rasters_winter <- stack(all_rasters_winter,r)
+      sum_rasters_winter <- sum(all_rasters_winter, na.rm = TRUE)
+      writeRaster(sum_rasters_winter, paste0(output_dir,"/", season, "_", year, "_24h_SUM_I_Method.tif"), options= "INTERLEAVE=BAND", overwrite=T)
+      # clear memory
+      remove(r_winter)
+      gc()
+    } else if (exists("r_spring")) {
+      r <- r_spring
+      all_rasters_spring <- stack(all_rasters_spring,r)
+      sum_rasters_spring <- sum(all_rasters_spring, na.rm = TRUE)
+      writeRaster(sum_rasters_spring, paste0(output_dir,"/", season, "_", year, "_24h_SUM_I_Method.tif"), options= "INTERLEAVE=BAND", overwrite=T)
+      # clear memory
+      remove(r_spring)
+      gc()
+    } else if (exists("r_summer")) {
+      r <- r_summer
+      all_rasters_summer <- stack(all_rasters_summer,r)
+      sum_rasters_summer <- sum(all_rasters_summer, na.rm = TRUE)
+      writeRaster(sum_rasters_summer, paste0(output_dir,"/", season, "_", year, "_24h_SUM_I_Method.tif"), options= "INTERLEAVE=BAND", overwrite=T)
+      # clear memory
+      remove(r_summer)
+      gc()
+    } else if (exists("r_fall"))  {
+      r <- r_fall
+      all_rasters_fall <- stack(all_rasters_fall,r)
+      sum_rasters_fall <- sum(all_rasters_fall, na.rm = TRUE)
+      writeRaster(sum_rasters_fall, paste0(output_dir,"/", season, "_", year, "_24h_SUM_I_Method.tif"), options= "INTERLEAVE=BAND", overwrite=T)
+      # clear memory
+      remove(r_fall)
+      gc()
+    }
+    
   }
 }
 
-###################################################################################################
-###################################################################################################
 
+
+###################################################################################################
+###################################################################################################
 
 # sum rasters for the YEAR 2011, "old" and "new"
-r_2011_old <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/2011_YEARLY_24h_SUM_I_Method_old.tif")
-r_2011_new <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/2011_YEARLY_24h_SUM_I_Method_new.tif")
-r_2011 <- sum(r_2011_old, r_2011_new)
-plot(r_2011)
-writeRaster(r_2011, "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/2011_YEARLY_24h_SUM_I_Method.tif" , options= "INTERLEAVE=BAND", overwrite=T)
+r_2011_old_summer <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS/SUMMER_2011_24h_SUM_I_Method_old.tif")
+r_2011_new_summer <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS/SUMMER_2011_24h_SUM_I_Method_new.tif")
+
+r_2011_summer <- sum(r_2011_old_summer, r_2011_new_summer)
+plot(r_2011_summer)
+writeRaster(r_2011_summer, "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS/SUMMER_2011_24h_SUM_I_Method.tif" , options= "INTERLEAVE=BAND", overwrite=T)
+
 
 
 #############################################################
