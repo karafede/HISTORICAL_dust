@@ -19,6 +19,27 @@ sites_Airports_UAE <- read.csv("F:/Historical_DUST/Airport_Locations_UAE.csv")
 sites_Airports_UAE <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/Airport_Locations_UAE_new.csv")
 
 
+# setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method")
+
+dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/UAE_boundary"
+### shapefile for UAE
+shp_UAE <- readOGR(dsn = dir, layer = "uae_emirates")
+
+# ----- Transform to EPSG 4326 - WGS84 (required)
+shp_UAE <- spTransform(shp_UAE, CRS("+init=epsg:4326"))
+# names(shp)
+plot(shp_UAE)
+
+
+# load raster with reference extension (it is an empty raster, only zeros)
+reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_old/20110629_II_Method_M_II_Method_sum.tif")
+# reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_I_Method/20110701_I_Method_sum.tif")
+
+plot(reference)
+# check resolution (~ 2km)
+res(reference)
+
+
 
 #############################################################################################
 # read SUM of DAILY DUST EVENTS from STACKED Rasters ########################################
@@ -55,15 +76,14 @@ class(TS)
 
  r <- raster(filenames[i])
  plot(r)
-
-  # add conditions to filter out only GOOD maps!!!!
- values(r)[values(r) < 0] = NA
+ # # reproject each raster with the same extent and resolution of the reference raster above
+ r = projectRaster(r, reference)
  
  # check if the raster is OK and not saturated
  if (maxValue(r[[1]])==53) {
    r <- reference
  } else {
-   r <- raster(filenames_YEAR[j])
+   r <- raster(filenames[i])
    r = projectRaster(r, reference)
  }
  
@@ -72,12 +92,15 @@ class(TS)
  n <- (values(r) == max)
  z <- length(n[n==TRUE])
  # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
- if (z > 16960/2) {
+ if (z > 16960) {
    r <- reference
  } else {
-   r <- raster(filenames_YEAR[j])
+   r <- raster(filenames[i])
    r = projectRaster(r, reference)
  }
+ 
+ # replace vlaues <- 0 into 0 or NA
+ values(r)[values(r) < 0] = NA
  
  
  SUM_DAILY_DUST_raster <- r
@@ -88,7 +111,8 @@ class(TS)
   DateTime_DUST <- rbind(DateTime_DUST, DATETIME_DUST)
   SITE_DUST <- as.data.frame(sites_Airports_UAE$Site)
   site_DUST <- rbind(site_DUST, SITE_DUST)
-  
+  # clear memory
+  gc()
  }
 
 extracted_SUM_DUST <- cbind(DateTime_DUST, extracted_SUM_DUST, site_DUST)
@@ -130,15 +154,15 @@ for (i in 1:length(filenames)) {
   
   r <- raster(filenames[i])
   plot(r)
+  # # reproject each raster with the same extent and resolution of the reference raster above
+  r = projectRaster(r, reference)
   
-  # add conditions to filter out only GOOD maps!!!!
-  values(r)[values(r) < 0] = NA
   
   # check if the raster is OK and not saturated
   if (maxValue(r[[1]])==53) {
     r <- reference
   } else {
-    r <- raster(filenames_YEAR[j])
+    r <- raster(filenames[i])
     r = projectRaster(r, reference)
   }
   
@@ -147,13 +171,15 @@ for (i in 1:length(filenames)) {
   n <- (values(r) == max)
   z <- length(n[n==TRUE])
   # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
-  if (z > 16960/2) {
+  if (z > 16960) {
     r <- reference
   } else {
-    r <- raster(filenames_YEAR[j])
+    r <- raster(filenames[i])
     r = projectRaster(r, reference)
   }
   
+  # replace vlaues <- 0 into 0 or NA
+  values(r)[values(r) < 0] = NA
   
   SUM_DAILY_DUST_raster <- r
   
@@ -163,7 +189,8 @@ for (i in 1:length(filenames)) {
   DateTime_DUST <- rbind(DateTime_DUST, DATETIME_DUST)
   SITE_DUST <- as.data.frame(sites_Airports_UAE$Site)
   site_DUST <- rbind(site_DUST, SITE_DUST)
-  
+  # clear memory
+  gc()
 }
 
 extracted_SUM_DUST <- cbind(DateTime_DUST, extracted_SUM_DUST, site_DUST)
@@ -276,7 +303,8 @@ all_DUST_SUM <- all_DUST_SUM %>%
                          "ASH SHARIQAH SW", "RAS-AL-KHAIMA","SIR ABU NAIR", "DUBAI MINHAD AB"))
 
 
-
+# save data
+write.csv(all_DUST_SUM, "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/DAILY_DUST_SUM_SEVIRI.csv")
 
 plot <- ggplot(all_DUST_SUM, aes(DateTime, SUM_DAILY_DUST_I_meth)) +
   theme_bw() +

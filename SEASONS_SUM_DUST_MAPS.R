@@ -395,7 +395,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-  png(paste0(output_dir, "/", "WINTER_MAPS_hours_DUST_MetFrance.png"), width = 1000, height = 900,
+  png(paste0(output_dir, "/", "WINTER_MAPS_hours_DUST_MetFrance.png"), width = 1100, height = 900,
       units = "px", pointsize = 100,
       bg = "white", res = 100)
   print(h)
@@ -458,7 +458,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-  png(paste0(output_dir, "/", "SPRING_MAPS_hours_DUST_MetFrance.png"), width = 1000, height = 900,
+  png(paste0(output_dir, "/", "SPRING_MAPS_hours_DUST_MetFrance.png"), width = 1100, height = 900,
       units = "px", pointsize = 100,
       bg = "white", res = 100)
   print(h)
@@ -521,7 +521,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-  png(paste0(output_dir, "/", "SUMMER_MAPS_hours_DUST_MetFrance.png"), width = 1000, height = 900,
+  png(paste0(output_dir, "/", "SUMMER_MAPS_hours_DUST_MetFrance.png"), width = 1100, height = 900,
       units = "px", pointsize = 100,
       bg = "white", res = 100)
   print(h)
@@ -584,7 +584,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-  png(paste0(output_dir, "/", "FALL_MAPS_hours_DUST_MetFrance.png"), width = 1000, height = 900,
+  png(paste0(output_dir, "/", "FALL_MAPS_hours_DUST_MetFrance.png"), width = 1100, height = 900,
       units = "px", pointsize = 100,
       bg = "white", res = 100)
   print(h)
@@ -954,7 +954,7 @@ h
 
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "WINTER_MAPS_hours_DUST_EUMETSAT.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "WINTER_MAPS_hours_DUST_EUMETSAT.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
@@ -1017,7 +1017,7 @@ h
 
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "SPRING_MAPS_hours_DUST_EUMETSAT.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "SPRING_MAPS_hours_DUST_EUMETSAT.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
@@ -1080,7 +1080,7 @@ h
 
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "SUMMER_MAPS_hours_DUST_EUMETSAT.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "SUMMER_MAPS_hours_DUST_EUMETSAT.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
@@ -1143,7 +1143,7 @@ h
 
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "FALL_MAPS_hours_DUST_EUMETSAT.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "FALL_MAPS_hours_DUST_EUMETSAT.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
@@ -1256,7 +1256,7 @@ h <- rasterVis::levelplot(DUST_images_WINTER,
 h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "WINTER_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "WINTER_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
@@ -1360,7 +1360,7 @@ h <- rasterVis::levelplot(AVG_DUST_image_SUMMER,
 h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "SUMMER_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "SUMMER_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
@@ -1464,7 +1464,7 @@ h <- rasterVis::levelplot(AVG_DUST_image_SPRING,
 h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "SPRING_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "SPRING_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
@@ -1568,7 +1568,7 @@ h <- rasterVis::levelplot(AVG_DUST_image_FALL,
 h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "FALL_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "FALL_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)

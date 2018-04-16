@@ -183,6 +183,7 @@ TS <- seq(from=2004, by=1, to=2017)
 vec_all <- as.vector(raster_stack)
 
 max_val<- (max(vec_all, na.rm = T))
+max_val <- 1000
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -244,7 +245,7 @@ DUST_images <- stack("STACK_YEARLY_24h_SUM_II_Method.tif")
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-  png(paste0(output_dir, "/", "MAPS_hours_DUST_MetFrance.png"), width = 1000, height = 900,
+  png(paste0(output_dir, "/", "MAPS_hours_DUST_MetFrance.png"), width = 1100, height = 900,
       units = "px", pointsize = 100,
       bg = "white", res = 100)
   print(h)
@@ -413,6 +414,7 @@ TS <- seq(from=2004, by=1, to=2017)
 vec_all <- as.vector(raster_stack)
 
 max_val<- (max(vec_all, na.rm = T))
+max_val <- 1650
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -611,7 +613,7 @@ h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
 # output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT"
-png(paste0(output_dir, "/", "MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1000, height = 900,
+png(paste0(output_dir, "/", "MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
