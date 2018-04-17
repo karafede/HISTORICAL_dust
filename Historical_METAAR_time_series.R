@@ -96,6 +96,12 @@ All_METAR <- rbind(OMAA, OMDB, OMAL, OMSJ, OMDW, OMAD, OMFJ, OMRK)
 
 str(All_METAR)  
 
+All_METAR <- All_METAR %>%
+  mutate(hour = hour(date))
+
+write.csv(All_METAR, "All_METAR_hourly.csv")
+
+
 # select onlt dust events (DUST --> D, SAND --> S)
 All_METAR_DUST <- All_METAR %>%
   filter(Weather %in% c("D", "S"))
