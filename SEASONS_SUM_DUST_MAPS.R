@@ -22,8 +22,12 @@ plot(shp_UAE)
 
 
 # load raster with reference extension (it is an empty raster, only zeros)
-reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_old/20110629_II_Method_M_II_Method_sum.tif")
-# reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_I_Method/20110701_I_Method_sum.tif")
+
+# old data reference until 2011
+reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/HDF5_outputs/II_Method_MetFr/II_method_MetFrance/daily_sum_II_MetFrance/20110629_II_Method_II_Method_sum.tif")
+
+# new data reference after 2011
+# reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/HDF5_outputs/II_Method_MetFr/II_method_MetFrance/daily_sum_II_MetFrance/20130302_II_Method_II_Method_sum.tif")
 
 plot(reference)
 # check resolution (~ 2km)
@@ -43,15 +47,14 @@ output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method
 # setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_old")
 
 ## load data from "2011-07-01" to "2017"
-setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_new")
-
+setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/HDF5_outputs/II_Method_MetFr/II_method_MetFrance/daily_sum_II_MetFrance")
 filenames <- list.files(pattern = ".tif$")
 
 # LIST filenames containing a specifc YEAR
 
 # LIST_YEARS <- list(2005, 2006, 2007, 2008, 2009)
-LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
-# LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
+# LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
+LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
 
 
 # LIST_YEARS <- 2010
@@ -59,8 +62,9 @@ LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR r
 # j <- 190
 
 
-for (i in 2017) {    # just 1 year
-# for (i in LIST_YEARS) {
+
+# for (i in 2017) {    # just 1 year
+for (i in LIST_YEARS) {
   filenames_YEAR <- list.files(pattern = c(i, ".tif$"))
   # force to list max 365 days
   filenames_YEAR <- filenames_YEAR[1:365]
@@ -70,9 +74,9 @@ for (i in 2017) {    # just 1 year
   filenames_YEAR <- as.character(filenames_YEAR)
 
 # extract date from filenames 
-year <- str_sub(filenames_YEAR, start = 1, end = -35)
-month <- str_sub(filenames_YEAR, start = 5, end = -33)
-day <- str_sub(filenames_YEAR, start = 7, end = -31)
+year <- str_sub(filenames_YEAR, start = 1, end = -33)
+month <- str_sub(filenames_YEAR, start = 5, end = -31)
+day <- str_sub(filenames_YEAR, start = 7, end = -29)
 Date <- paste0(year,"-", month, "-", day)
 Date <- as.Date(Date)
 
@@ -90,7 +94,7 @@ all_rasters_fall <- stack()
        # daily raster
        r <- raster(filenames_YEAR[j])
        # # reproject each raster with the same extent and resolution of the reference raster above
-       r = projectRaster(r, reference)
+       # r = projectRaster(r, reference)
       
        
        # check if the raster is OK and not saturated
@@ -98,38 +102,28 @@ all_rasters_fall <- stack()
          r <- reference
        } else {
          r <- raster(filenames_YEAR[j])
-         r = projectRaster(r, reference)
+        # r = projectRaster(r, reference)
        }
         
-       max <- maxValue(r[[1]])
-       n <- (values(r) == max)
-       z <- length(n[n==TRUE])
-       # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
-       if (z > 16960) {
-         r <- reference
-       } else {
-         r <- raster(filenames_YEAR[j])
-         r = projectRaster(r, reference)
-       }
        
        # replace vlaues <- 0 into 0 or NA
        values(r)[values(r) < 0] = NA
        
        ###### from  "2004-03-18" to "2011-06-30" #################################################
        # 61 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
-       # r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
+       r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
        # plot(r)
        
        ###### from  "2011-07-01" 20110701_II_Method_M_II_Method_sum  (181 file) ###################
        # 96 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
-       r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
+       # r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
        # plot(r)
        
        ##########################################################
        # get the month and classify for the season #############
-       month <- str_sub(filenames_YEAR[j], start = 5, end = -33)
+       month <- str_sub(filenames_YEAR[j], start = 5, end = -31)
        month <- as.numeric(month)
-       year <- str_sub(filenames_YEAR[j], start = 1, end = -35)
+       year <- str_sub(filenames_YEAR[j], start = 1, end = -33)
        year <- as.numeric(year)
        
        if (month %in% c(1:2)) {
@@ -606,14 +600,14 @@ output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_
 # setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_I_Method_old")
 
 # load data from "2011-07-01" to "2017"
-setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_I_Method_new")
+  setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/HDF5_outputs/I_method_EUMETSAT/daily_sum_I_EUMETSAT")
 filenames <- list.files(pattern = ".tif$")
 
 # LIST filenames containing a specifc YEAR
 
 # LIST_YEARS <- list(2005, 2006, 2007, 2008, 2009)
-LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
-# LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
+# LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
+LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
 
 
 # LIST_YEARS <- 2010
@@ -652,7 +646,7 @@ for (i in LIST_YEARS) {
     # daily raster
     r <- raster(filenames_YEAR[j])
     # # reproject each raster with the same extent and resolution of the reference raster above
-    r = projectRaster(r, reference)
+    # r = projectRaster(r, reference)
     
     
     # check if the raster is OK and not saturated
@@ -660,31 +654,21 @@ for (i in LIST_YEARS) {
       r <- reference
     } else {
       r <- raster(filenames_YEAR[j])
-      r = projectRaster(r, reference)
+    #  r = projectRaster(r, reference)
     }
     
-    max <- maxValue(r[[1]])
-    n <- (values(r) == max)
-    z <- length(n[n==TRUE])
-    # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
-    if (z > 16960) {
-      r <- reference
-    } else {
-      r <- raster(filenames_YEAR[j])
-      r = projectRaster(r, reference)
-    }
     
     # replace vlaues <- 0 into 0 or NA
     values(r)[values(r) < 0] = NA
     
     ###### from  "2004-03-18" to "2011-06-30" #################################################
     # 61 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
-    # r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
+    r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
     # plot(r)
     
     ###### from  "2011-07-01" 20110701_II_Method_M_II_Method_sum  (181 file) ###################
     # 96 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
-    r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
+    # r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
     # plot(r)
     
     ##########################################################

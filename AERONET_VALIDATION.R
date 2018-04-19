@@ -36,7 +36,7 @@ METAR_all <- METAR_all %>%
   dplyr::select(-X)
 
 METAR_DUST <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/All_METAR_DUST_hourly.csv")
-METAR <- METAR %>%
+METAR_DUST <- METAR_DUST %>%
   mutate(date = date(date)) %>%
   dplyr::select(-X)
 
@@ -78,7 +78,7 @@ plot
 
 
 
-# load AERONET data with CLOUDY DAYS
+# load AERONET data with ONLY CLOUDY DAYS
 METAR_AERONET_AUH_CLOUD <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/AERONET_L2/METAR_AERONET_AUH_CLOUD.csv")
 str(METAR_AERONET_AUH_CLOUD)
 METAR_AERONET_AUH_CLOUD <- METAR_AERONET_AUH_CLOUD %>%
@@ -112,7 +112,7 @@ str(METAR_AERONET_AUH)
 plot <- ggplot(METAR_AERONET_AUH, aes(DateTime, AOD_500nm)) +
   theme_bw() +
   geom_point(aes(y = AOD_500nm, col = "AOD_500nm"), alpha=1, col="blue", size = 1) +
-   geom_point(aes(y = AOD_500nm_CLOUD, col = "AOD_500nm_CLOUD"), alpha=1, col="red", size = 1) +
+   geom_point(aes(y = AOD_500nm_CLOUD, col = "AOD_500nm_CLOUD"), alpha=1, col="red", size = 1.5) +
   
   #  scale_color_discrete(name = "Y series", labels = c("DAILY_AOD_AQUA", "DAILY_AOD_TERRA")) +
   # stat_smooth(method = "loess") +

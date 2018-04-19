@@ -213,8 +213,8 @@ plot <- ggplot(all_DUST_SUM, aes(DateTime, ANNUAL_SUM_II_meth)) +
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold")) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=15),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
-  scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
-  ylim(0, 1200)
+  scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
+#  ylim(0, 1200)
 plot
 
 
@@ -252,7 +252,7 @@ plot <- ggplot(all_DUST_SUM, aes(DateTime, ANNUAL_SUM_I_meth)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
-  ylim(0, 1200)
+  ylim(0, 1500)
 plot
 
 
@@ -283,7 +283,7 @@ plot <- ggplot(all_DUST_SUM, aes(DateTime, ANNUAL_SUM_II_meth)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
-ylim(0, 800)
+ylim(0, 1500)
 plot
 
 
@@ -384,7 +384,10 @@ ggsave(plot=plot, filename=paste0("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTOR
 
 ###############################################################
 # load METAAR data (sum dust)
+# with dust
 METAR_DATA_YEAR <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/METAR_DUST_VIS_YEAR.csv")
+# clear sky
+METAR_DATA_YEAR <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/METAR_DUST_CLEAR_VIS_YEAR.csv")
 
 # join METAR data and SEVIRI data by YEAR and by STATION
 all_DUST_SUM <- all_DUST_SUM %>%

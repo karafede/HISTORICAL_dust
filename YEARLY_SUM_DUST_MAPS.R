@@ -83,13 +83,14 @@ all_rasters <- stack()    # stack ALL HOURS together in an unique raster
          r <- raster(filenames_YEAR[j])
         # r = projectRaster(r, reference)
        }
+       
        # plot(r)
        
-       z <- cellStats(r, sum)
-       # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
-       if (z > 16960) {
-         r <- reference
-       } 
+       # z <- cellStats(r, sum)
+       # # # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
+       # if (z > 16960) {
+       #   r <- reference
+       # }
        
        # replace vlaues <- 0 into 0 or NA
        values(r)[values(r) < 0] = NA
@@ -176,7 +177,7 @@ TS <- seq(from=2004, by=1, to=2017)
 vec_all <- as.vector(raster_stack)
 
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 600
+max_val <- 1000
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -187,8 +188,8 @@ IQR <- (as.numeric((stat_dat[5]-stat_dat[2])* 2))# n is the space after IQR
 low_IQR<- if(floor(min_val) > floor(as.numeric((stat_dat[2]- IQR)))) floor(min_val) else floor(as.numeric((stat_dat[2]- IQR)))
 high_IQR <-if ( max_val > (as.numeric((stat_dat[5]+IQR)))) max_val else (as.numeric((stat_dat[5]+IQR)))
 
-cool = rainbow(8, start=rgb2hsv(col2rgb('green'))[1], end=rgb2hsv(col2rgb('blue'))[1])
-cool_2 = rainbow(63, start=rgb2hsv(col2rgb('yellow'))[1], end=rgb2hsv(col2rgb('green'))[1])
+cool = rainbow(20, start=rgb2hsv(col2rgb('green'))[1], end=rgb2hsv(col2rgb('blue'))[1])
+cool_2 = rainbow(50, start=rgb2hsv(col2rgb('yellow'))[1], end=rgb2hsv(col2rgb('green'))[1])
 warm = rainbow(130, start=rgb2hsv(col2rgb('red'))[1], end=rgb2hsv(col2rgb('yellow'))[1])
 cols = c(rev(cool), rev(cool_2), rev(warm))
 
@@ -310,13 +311,14 @@ for (i in LIST_YEARS) {
       r <- raster(filenames_YEAR[j])
     #  r = projectRaster(r, reference)
     }
+    
    # plot(r)
 
     z <- cellStats(r, sum)
-    # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
-    if (z > 16960) {
-      r <- reference
-    } else
+    # # # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
+    # if (z > 16960) {
+    #   r <- reference
+    # }
       
 
     # replace vlaues <- 0 into 0 or NA
@@ -409,7 +411,7 @@ TS <- seq(from=2004, by=1, to=2017)
 vec_all <- as.vector(raster_stack)
 
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 400
+max_val <- 1500
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -420,9 +422,9 @@ IQR <- (as.numeric((stat_dat[5]-stat_dat[2])* 2))# n is the space after IQR
 low_IQR<- if(floor(min_val) > floor(as.numeric((stat_dat[2]- IQR)))) floor(min_val) else floor(as.numeric((stat_dat[2]- IQR)))
 high_IQR <-if ( max_val > (as.numeric((stat_dat[5]+IQR)))) max_val else (as.numeric((stat_dat[5]+IQR)))
 
-cool = rainbow(15, start=rgb2hsv(col2rgb('green'))[1], end=rgb2hsv(col2rgb('blue'))[1])
-cool_2 = rainbow(55, start=rgb2hsv(col2rgb('yellow'))[1], end=rgb2hsv(col2rgb('green'))[1])
-warm = rainbow(130, start=rgb2hsv(col2rgb('red'))[1], end=rgb2hsv(col2rgb('yellow'))[1])
+cool = rainbow(20, start=rgb2hsv(col2rgb('green'))[1], end=rgb2hsv(col2rgb('blue'))[1])
+cool_2 = rainbow(30, start=rgb2hsv(col2rgb('yellow'))[1], end=rgb2hsv(col2rgb('green'))[1])
+warm = rainbow(150, start=rgb2hsv(col2rgb('red'))[1], end=rgb2hsv(col2rgb('yellow'))[1])
 cols = c(rev(cool), rev(cool_2), rev(warm))
 
 

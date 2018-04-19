@@ -113,12 +113,19 @@ if (All_METAR_DUST$Weather %in% c("D", "S")) {
 
 
 All_METAR_DUST$VIS <- as.numeric(All_METAR_DUST$VIS)
-All_METAR_DUST <- na.omit(All_METAR_DUST)
+# All_METAR_DUST <- na.omit(All_METAR_DUST)
 
 All_METAR_DUST <- All_METAR_DUST %>%
   mutate(hour = hour(date))
 
 write.csv(All_METAR_DUST, "All_METAR_DUST_hourly.csv")
+
+##############################################
+##############################################
+# remove cloudy days in excel.
+All_METAR_DUST <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/All_METAR_DUST_hourly.csv")
+All_METAR_DUST_CLEAR <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/All_METAR_DUST_hourly_CLEAR_SKY.csv")
+str(All_METAR_DUST_CLEAR)
 
 
 ###########################
@@ -133,6 +140,17 @@ All_METAR_DUST_DAILY <- All_METAR_DUST_DAILY %>%
 
 # save daily data
 write.csv(All_METAR_DUST_DAILY, "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/All_METAR_DUST_DAILY.csv")
+
+
+# only CLEAR sky
+All_METAR_DUST_CLEAR_DAILY <- All_METAR_DUST_CLEAR %>%
+  mutate(date = mdy_hm(date))
+All_METAR_DUST_CLEAR_DAILY <- All_METAR_DUST_CLEAR_DAILY %>%
+  group_by(station,
+           date)
+
+# save daily data
+write.csv(All_METAR_DUST_CLEAR_DAILY, "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/All_METAR_DUST_CLEAR_DAILY.csv")
 
 ###########################
 # aggregate data by YEAR ##
@@ -159,6 +177,34 @@ METAR_DATA_YEAR$Date <- as.POSIXct(METAR_DATA_YEAR$Date)
 
 write.csv(METAR_DATA_YEAR, "METAR_DUST_VIS_YEAR.csv")
 
+
+# only with CLEAR SKY #########
+###############################
+
+
+All_METAR_DUST_CLEAR <- All_METAR_DUST_CLEAR %>%
+  mutate(date = mdy_hm(date))
+
+METAR_DUST_CLEAR <- All_METAR_DUST_CLEAR %>%
+  mutate(YEAR = year(date))
+
+METAR_DUST_CLEAR <- METAR_DUST_CLEAR %>%
+  group_by(YEAR, station) %>%
+  summarize(ANNUAL_SUM = sum(count, na.rm = TRUE),
+            MIN_VIS = min(VIS, na.rm = TRUE),
+            MAX_VIS = max(VIS, na.rm = TRUE))
+
+
+# create a Data format field
+METAR_DUST_CLEAR$Date <- paste(METAR_DUST_CLEAR$YEAR, "-12-31")
+str(METAR_DUST_CLEAR)
+METAR_DUST_CLEAR <- METAR_DUST_CLEAR %>%
+  mutate(Date = ymd(Date))
+METAR_DUST_CLEAR$Date <- as.POSIXct(METAR_DUST_CLEAR$Date)
+
+
+write.csv(METAR_DUST_CLEAR, "METAR_DUST_CLEAR_VIS_YEAR.csv")
+
 ###########################################################
 ## ANNUAL plot ############################################
 ###########################################################
@@ -176,7 +222,7 @@ plot <- ggplot(METAR_DATA_YEAR, aes(Date, ANNUAL_SUM)) +
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold")) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=15),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
-scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
+scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
 #  ylim(0, 100)
 plot
 
@@ -185,7 +231,7 @@ plot
 #################################################################################################
 ##### bar plot ##################################################################################
 
-# dust events
+# dust events including CLOUDS
 
 plot <- ggplot(METAR_DATA_YEAR, aes(Date, ANNUAL_SUM)) +
   theme_bw() +
@@ -193,9 +239,11 @@ plot <- ggplot(METAR_DATA_YEAR, aes(Date, ANNUAL_SUM)) +
   facet_wrap(~ station) +
   # stat_smooth(method = "lm", se = FALSE) +
   theme(strip.text = element_text(size = 10)) + 
+  ggtitle("METAR - dust hours with clouds") +
   ylab(expression(paste("Duration of Dust (hours)"))) +
   theme(axis.title.x=element_blank(),
-        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=9, colour = "black", face="bold")) +
+        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=9, colour = "black", face="bold"),
+        plot.title = element_text(color="red", size=14, face="bold.italic", hjust = 0.5)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
@@ -206,26 +254,64 @@ plot
 # plot ###
 output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/plots/"
 
-png(paste0(output_folder,"Annual_DUST_METAR_2004_2018.png"), width = 2000, height = 1000,
+png(paste0(output_folder,"Annual_DUST_METAR_2004_2018_with_CLOUDS.png"), width = 2000, height = 1000,
     units = "px", pointsize = 50,
     bg = "white", res = 200)
 print(plot)
 dev.off()
 
-#####################################################################################################
-#####################################################################################################
 
-# visibiliy
+################################
+# dust events with CLEAR SKY ###
+################################
 
-plot <- ggplot(METAR_DATA_YEAR, aes(Date, MIN_VIS)) +
+plot <- ggplot(METAR_DUST_CLEAR, aes(Date, ANNUAL_SUM)) +
   theme_bw() +
   geom_bar(stat="identity") +
   facet_wrap(~ station) +
   # stat_smooth(method = "lm", se = FALSE) +
   theme(strip.text = element_text(size = 10)) + 
+  ggtitle("METAR - dust hours with clear sky") +
+  ylab(expression(paste("Duration of Dust (hours)"))) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=9, colour = "black", face="bold"),
+        plot.title = element_text(color="blue", size=14, face="bold.italic", hjust = 0.5)) +
+  theme(axis.title.y = element_text(face="bold", colour="black", size=12),
+        axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
+  scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
+# ylim(0, 160000)
+plot
+
+
+# plot ###
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/plots/"
+
+png(paste0(output_folder,"Annual_DUST_METAR_2004_2018_CLEAR_SKY.png"), width = 2000, height = 1000,
+    units = "px", pointsize = 50,
+    bg = "white", res = 200)
+print(plot)
+dev.off()
+
+
+
+
+
+#####################################################################################################
+#####################################################################################################
+
+# visibiliy (using clear sky data)
+
+plot <- ggplot(METAR_DUST_CLEAR, aes(Date, MIN_VIS)) +
+  theme_bw() +
+  geom_bar(stat="identity") +
+  facet_wrap(~ station) +
+  # stat_smooth(method = "lm", se = FALSE) +
+  theme(strip.text = element_text(size = 10)) + 
+  ggtitle("METAR - Minimum Visibility with clear sky") +
   ylab(expression(paste("Minimum Visibility (km)"))) +
   theme(axis.title.x=element_blank(),
-        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=9, colour = "black", face="bold")) +
+        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=9, colour = "black", face="bold"),
+        plot.title = element_text(color="blue", size=14, face="bold.italic", hjust = 0.5)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
@@ -241,3 +327,4 @@ png(paste0(output_folder,"Minimum_Visibility_METAR_2004_2018.png"), width = 2000
     bg = "white", res = 200)
 print(plot)
 dev.off()
+
