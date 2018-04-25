@@ -51,6 +51,8 @@ SEVIRI_DAILY_SUM_DUST$season <- factor(SEVIRI_DAILY_SUM_DUST$season, levels = c(
 
 # load METAR data 
 All_METAR_DUST_DAILY <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/All_METAR_DUST_DAILY.csv")
+# clear sky
+All_METAR_DUST_DAILY <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/All_METAR_DUST_CLEAR_DAILY.csv")
 
 
 str(All_METAR_DUST_DAILY)
@@ -98,6 +100,15 @@ YEARLY_SUM_DUST_SEASON <- DAILY_SUM_DUST %>%
 
 str(YEARLY_SUM_DUST_SEASON)
 
+# make annual averages by stations and by season
+STATS_YEARLY_SUM_DUST_SEASON <- YEARLY_SUM_DUST_SEASON %>%
+  group_by(station,
+           season) %>%
+  summarise(MEAN_EUMETSAT = mean(SUM_EUMETSAT),
+            MEAN_METEOFRANCE = mean(SUM_MeteoFrance),
+            MEAN_METAR = mean(SUM_METAR)/2)
+write.csv(STATS_YEARLY_SUM_DUST_SEASON, "STATS_YEARLY_SUM_DUST_SEASON.csv")
+
 # YEARLY_SUM_DUST_SEASON$date <- paste0(YEARLY_SUM_DUST_SEASON$YEAR, "-12-31") 
 # YEARLY_SUM_DUST_SEASON$date <- as.Date(YEARLY_SUM_DUST_SEASON$date)
 
@@ -140,15 +151,15 @@ grays = c(MeteoFrance_Meth="red", EUMETSAT_Meth="blue", METAR="black")
 YEARLY_SUM_DUST_SEASON_ABU <- YEARLY_SUM_DUST_SEASON %>%
   filter(station == "Abu Dhabi")
 
-plot <- ggplot(YEARLY_SUM_DUST_SEASON_ABU, aes(YEAR, value, fill = variable)) +
+plot <- ggplot(YEARLY_SUM_DUST_SEASON, aes(YEAR, value, fill = variable)) +
   theme_bw() +
   geom_bar(stat="identity", width = 0.8, position = "dodge") +
   scale_fill_manual(values=grays) +
-  ggtitle("Abu Dhabi") +
+  # ggtitle("Abu Dhabi") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  # facet_grid(station ~ season) +
-  facet_wrap(~ season) +
-  theme( strip.text = element_text(size = 14)) + 
+  facet_grid(station ~ season) +
+  # facet_wrap(~ season) +
+  theme( strip.text = element_text(size = 6)) + 
   ylab(expression(paste("Seasonal duration of Dust (hours)"))) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold")) +
@@ -161,7 +172,8 @@ plot
 
 
 # save plot
-ggsave(plot=plot, filename=paste0("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/Abu_Dhabi_Annual_Seasonal_Hours_of_dust_SEVIRI_and_METAR.png"), height=5, width=10)
+# ggsave(plot=plot, filename=paste0("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/Abu_Dhabi_Annual_Seasonal_Hours_of_dust_SEVIRI_and_METAR.png"), height=5, width=10)
+ggsave(plot=plot, filename=paste0("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/Annual_Seasonal_Hours_of_dust_SEVIRI_and_METAR.png"), height=5, width=10)
 
 
 
@@ -184,7 +196,7 @@ plot <- ggplot(YEARLY_SUM_DUST_SEASON_DUBAI, aes(YEAR, value, fill = variable)) 
   theme(axis.title.y = element_text(face="bold", colour="black", size=10),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=8, colour = "black")) +
   # scale_x_date(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
-  ylim(0, 500)
+  ylim(0, 400)
 plot
 
 

@@ -163,14 +163,13 @@ extracted_SUM_DUST_II_Method$DateTime <- ymd(extracted_SUM_DUST_II_Method$DateTi
 # average data if from the same station
 extracted_SUM_DUST_I_Method <- extracted_SUM_DUST_I_Method %>%
  group_by(station, DateTime) %>%
-  summarize(ANNUAL_SUM_I_meth = mean(ANNUAL_SUM_I_meth))
-
+  summarize(ANNUAL_SUM_I_meth = mean(ANNUAL_SUM_I_meth, na.rm = TRUE))
 
 
 # average data if from the same station
 extracted_SUM_DUST_II_Method <- extracted_SUM_DUST_II_Method %>%
   group_by(station, DateTime) %>%
-  summarize(ANNUAL_SUM_II_meth = mean(ANNUAL_SUM_II_meth))
+  summarize(ANNUAL_SUM_II_meth = mean(ANNUAL_SUM_II_meth, na.rm = TRUE))
 
 
 head(extracted_SUM_DUST_I_Method)
@@ -195,6 +194,12 @@ all_DUST_SUM <- all_DUST_SUM %>%
                          "ASH SHARIQAH SW", "RAS-AL-KHAIMA","SIR ABU NAIR", "DUBAI MINHAD AB"))
 
 
+
+TOTAL_SUM_DUST <- all_DUST_SUM %>%
+  group_by(station) %>%
+  summarize(TOTAL_SUM_I_meth = mean(ANNUAL_SUM_I_meth),
+            TOTAL_SUM_II_meth = mean(ANNUAL_SUM_II_meth))
+write.csv(TOTAL_SUM_DUST, "TOTAL_SUM_DUST_2004_2017.csv")
 
 plot <- ggplot(all_DUST_SUM, aes(DateTime, ANNUAL_SUM_II_meth)) +
   theme_bw() +
@@ -242,17 +247,17 @@ plot <- ggplot(all_DUST_SUM, aes(DateTime, ANNUAL_SUM_I_meth)) +
   theme_bw() +
   geom_bar(stat="identity") +
   facet_wrap(~ station) +
-  # stat_smooth(method = "lm", se = FALSE) +
-  theme(strip.text = element_text(size = 10)) +
+  stat_smooth(method = "lm", se = FALSE) +
+  theme(strip.text = element_text(size = 14)) +
   ggtitle("SEVIRI - EUMETSAT") +
   ylab(expression(paste("Annual duration of Dust (hours)"))) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold"),
-        plot.title = element_text(color="red", size=14, face="bold.italic", hjust = 0.5)) +
-  theme(axis.title.y = element_text(face="bold", colour="black", size=12),
+        plot.title = element_text(color="black", size=25, face="bold.italic", hjust = 0.5)) +
+  theme(axis.title.y = element_text(face="bold", colour="black", size=15),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
-  ylim(0, 1500)
+   ylim(0, 1200)
 plot
 
 
@@ -273,17 +278,17 @@ plot <- ggplot(all_DUST_SUM, aes(DateTime, ANNUAL_SUM_II_meth)) +
   theme_bw() +
   geom_bar(stat="identity") +
   facet_wrap(~ station) +
-  # stat_smooth(method = "lm", se = FALSE) +
-  theme(strip.text = element_text(size = 10)) + 
+  stat_smooth(method = "lm", se = FALSE) +
+  theme(strip.text = element_text(size = 14)) + 
   ggtitle("SEVIRI - MeteoFrance") +
   ylab(expression(paste("Annual duration of Dust (hours)"))) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=10, colour = "black", face="bold"),
-        plot.title = element_text(color="blue", size=14, face="bold.italic", hjust = 0.5)) +
-  theme(axis.title.y = element_text(face="bold", colour="black", size=12),
+        plot.title = element_text(color="black", size=25, face="bold.italic", hjust = 0.5)) +
+  theme(axis.title.y = element_text(face="bold", colour="black", size=15),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
-ylim(0, 1500)
+ylim(0, 1200)
 plot
 
 
@@ -305,6 +310,11 @@ all_DUST_SUM_AVERAGE <- all_DUST_SUM %>%
   group_by(DateTime, station) %>%
   summarise(AVG_DUST = mean(ANNUAL_SUM_I_meth:ANNUAL_SUM_II_meth))
 
+
+TOTAL_SUM_DUST_AVERAGE <- all_DUST_SUM_AVERAGE %>%
+  group_by(station) %>%
+  summarize(TOTAL_SUM = mean(AVG_DUST))
+write.csv(TOTAL_SUM_DUST_AVERAGE, "TOTAL_SUM_DUST_AVERAGE_2004_2017.csv")
 
 
 plot <- ggplot(all_DUST_SUM_AVERAGE, aes(DateTime, AVG_DUST)) +
@@ -396,6 +406,13 @@ all_DUST_SUM <- all_DUST_SUM %>%
 # remove all Na rows from DAILY_SUM_EUMETSAT
 all_DUST_SUM <- all_DUST_SUM[!is.na(all_DUST_SUM$ANNUAL_SUM),]
 
+all_DUST_SUM_TOTAL <- all_DUST_SUM %>%
+  group_by(station) %>%
+  summarize(TOTAL_SUM = mean(ANNUAL_SUM))
+write.csv(all_DUST_SUM_TOTAL, "TOTAL_SUM_DUST_METAR_2004_2017.csv")
+
+
+
 ##########################################
 # melt data with SEVIRI data
 
@@ -420,7 +437,7 @@ plot <- ggplot(all_SUM_data, aes(YEAR, value, fill = variable)) +
   theme_bw() +
   geom_bar(stat="identity", width = 1, position = "dodge") +
   scale_fill_manual(values=grays) +
-  facet_wrap(~ station) +
+  facet_wrap(~ station, ncol = 2) +
   theme( strip.text = element_text(size = 12)) + 
   theme(strip.text = element_text(size = 10)) + 
   ylab(expression(paste("Annual duration of Dust (hours)"))) +
@@ -434,7 +451,7 @@ plot
 
 
 # save plot
-ggsave(plot=plot, filename=paste0("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/Annual_Hours_of_dust_SEVIRI_and_METAR.png"), height=5, width=10)
+ggsave(plot=plot, filename=paste0("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/Annual_Hours_of_dust_SEVIRI_and_METAR.png"), height=5, width=7)
 
 ###############################################################
 ###############################################################
@@ -473,19 +490,19 @@ eq_DUST <- ddply(all_DUST_SUM, .(station),lm_eqn)
 plot <- ggplot(all_DUST_SUM, aes(x = ANNUAL_SUM_I_meth, y=ANNUAL_SUM_II_meth)) +
   theme_bw() +
   geom_point(size = 2, color='black') +    # Use hollow circles
-  geom_smooth(method=lm, formula=y~x-1, fill=NA) +  # Add linear regression line  (force to origin)
+  geom_smooth(method=lm, formula=y~x-1,fill=NA) +  # Add linear regression line  (force to origin)
 # geom_smooth(method=lm, formula=y~x, fill=NA) +  
-  facet_wrap( ~ station) +
-  theme( strip.text = element_text(size = 12)) + 
+  facet_wrap( ~ station, ncol = 2) +
+  theme( strip.text = element_text(size = 13)) + 
   ylab(expression(paste("Hours of Dust (Meteo France)"))) +
   xlab(expression(paste("Hours of Dust (EUMETSAT)"))) +
-  ylim(c(0, 700)) +
-  xlim(c(0, 1200)) +
+  # ylim(c(0, 700)) +
+  # xlim(c(0, 1200)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
-  geom_text(data = eq_DUST, aes(x = 600, y = 600, label = V1),
+  geom_text(data = eq_DUST, aes(x = 600, y = 900, label = V1),
             parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
 plot
 
@@ -493,7 +510,7 @@ plot
 output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots/"
 
 png(paste0(output_folder,"Correlation_MetFrance_vs_EUMETSAT.jpg"),
-    width = 1600, height = 1050, units = "px", pointsize = 30,
+    width = 900, height = 1050, units = "px", pointsize = 30,
     bg = "white", res = 150)
 print(plot)
 dev.off()
@@ -502,6 +519,11 @@ dev.off()
 # correlate SEVIRI DUST data (EUMETSAT) with DUST events from METAR
 
 all_DUST_SUM_clean <- all_DUST_SUM[!is.na(all_DUST_SUM$ANNUAL_SUM),]
+
+MIN_VIS_TOTAL <- all_DUST_SUM_clean %>%
+  group_by(station) %>%
+  summarise(min_VIS = min(MIN_VIS))
+write.csv(MIN_VIS_TOTAL, "MIN_VIS_TOTAL.csv")
 
 
 lm_eqn <- function(df){
@@ -536,14 +558,14 @@ plot <- ggplot(all_DUST_SUM_clean, aes(x = ANNUAL_SUM_I_meth, y=ANNUAL_SUM)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("Hours of Dust (METAR)"))) +
   xlab(expression(paste("Hours of Dust (EUMETSAT)"))) +
-  ylim(c(0, 1000)) +
-  xlim(c(0, 800)) +
+  # ylim(c(0, 1000)) +
+  # xlim(c(0, 800)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
-  geom_text(data = eq_DUST, aes(x = 600, y = 800, label = V1),
-            parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
+  geom_text(data = eq_DUST, aes(x = 500, y = 800, label = V1),
+            parse = TRUE, inherit.aes=FALSE, size = 5, color = "red" )
 plot
 
 # save plot
@@ -581,14 +603,14 @@ plot <- ggplot(all_DUST_SUM_clean, aes(x = ANNUAL_SUM_II_meth, y=ANNUAL_SUM)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("Hours of Dust (METAR)"))) +
   xlab(expression(paste("Hours of Dust (Meteo France)"))) +
-  ylim(c(0, 1000)) +
-  xlim(c(0, 800)) +
+  # ylim(c(0, 1000)) +
+  # xlim(c(0, 800)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
-  geom_text(data = eq_DUST, aes(x = 600, y = 800, label = V1),
-            parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
+  geom_text(data = eq_DUST, aes(x = 500, y = 700, label = V1),
+            parse = TRUE, inherit.aes=FALSE, size = 5, color = "red" )
 plot
 
 # save plot
@@ -630,13 +652,13 @@ plot <- ggplot(all_DUST_SUM_clean, aes(x = ANNUAL_SUM_I_meth, y=MIN_VIS)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("METAR (minimum visibility - km)"))) +
   xlab(expression(paste("Hours of DUST (EUMETSAT)"))) +
-  ylim(c(-1, 5)) +
-  xlim(c(0, 600)) +
+  # ylim(c(-1, 5)) +
+  # xlim(c(0, 600)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
-  geom_text(data = eq_DUST, aes(x = 300, y = 4, label = V1),
+  geom_text(data = eq_DUST, aes(x = 300, y = 5, label = V1),
             parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
 plot
 
@@ -679,13 +701,13 @@ plot <- ggplot(all_DUST_SUM_clean, aes(x = ANNUAL_SUM_II_meth, y=MIN_VIS)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("METAR (minimum visibility - km)"))) +
   xlab(expression(paste("Hours of DUST (Meteo France)"))) +
-  ylim(c(-1, 5)) +
-  xlim(c(0, 800)) +
+  # ylim(c(-1, 5)) +
+  # xlim(c(0, 800)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
-  geom_text(data = eq_DUST, aes(x = 300, y = 4, label = V1),
+  geom_text(data = eq_DUST, aes(x = 400, y = 3.5, label = V1),
             parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
 plot
 
@@ -735,14 +757,14 @@ plot <- ggplot(all_DUST_SUM_AVERAGE, aes(x = AVG_DUST, y=ANNUAL_SUM)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("Hours of Dust (METAR)"))) +
   xlab(expression(paste("Hours of Dust (Meteo France & EUMETSAT)"))) +
-  ylim(c(0, 1000)) +
-  xlim(c(0, 800)) +
+  # ylim(c(0, 1000)) +
+  # xlim(c(0, 800)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
-  geom_text(data = eq_DUST, aes(x = 600, y = 800, label = V1),
-            parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
+  geom_text(data = eq_DUST, aes(x = 400, y = 700, label = V1),
+            parse = TRUE, inherit.aes=FALSE, size = 5, color = "red" )
 plot
 
 # save plot
@@ -784,14 +806,14 @@ plot <- ggplot(all_DUST_SUM_AVERAGE, aes(x = AVG_DUST, y=MIN_VIS)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("METAR (minimum visibility - km)"))) +
   xlab(expression(paste("Hours of DUST (Meteo France & EUMETSAT)"))) +
-  ylim(c(-1, 5)) +
-  xlim(c(0, 800)) +
+  # ylim(c(-1, 5)) +
+  # xlim(c(0, 800)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
   geom_text(data = eq_DUST, aes(x = 300, y = 4, label = V1),
-            parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
+            parse = TRUE, inherit.aes=FALSE, size = 5, color = "red" )
 plot
 
 # save plot

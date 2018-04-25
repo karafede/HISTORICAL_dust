@@ -32,10 +32,8 @@ plot(shp_UAE)
 
 
 # load raster with reference extension (it is an empty raster, only zeros)
-reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method_old/20110629_II_Method_M_II_Method_sum.tif")
-# reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_I_Method/20110701_I_Method_sum.tif")
+reference <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/HDF5_outputs/II_Method_MetFr/II_method_MetFrance/daily_sum_II_MetFrance/20110629_II_Method_II_Method_sum.tif")
 
-plot(reference)
 # check resolution (~ 2km)
 res(reference)
 
@@ -52,7 +50,8 @@ res(reference)
 #### II Method Met France Original ##############
 #################################################
 
-setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_II_Method")
+setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/HDF5_outputs/II_Method_MetFr/II_method_MetFrance/daily_sum_II_MetFrance")
+
 filenames <- list.files(pattern = ".tif$")
 
 # read rasters of the DAILY SUM of DUST EVENTS with SEVIRI data (II method)
@@ -66,9 +65,9 @@ site_DUST <- NULL
 
 for (i in 1:length(filenames)) {
 
-year <- str_sub(filenames[i], start= 1, end=-35)
-month <- str_sub(filenames[i], start= 5, end=-33)
-day <- str_sub(filenames[i], start= 7, end=-31)
+year <- str_sub(filenames[i], start= 1, end=-33)
+month <- str_sub(filenames[i], start= 5, end=-31)
+day <- str_sub(filenames[i], start= 7, end=-29)
 DATE <- paste0(year,"-", month, "-", day)
 TS <- as.Date(DATE)
 class(TS)
@@ -87,17 +86,7 @@ class(TS)
    r = projectRaster(r, reference)
  }
  
- 
- max <- maxValue(r[[1]])
- n <- (values(r) == max)
- z <- length(n[n==TRUE])
- # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
- if (z > 16960) {
-   r <- reference
- } else {
-   r <- raster(filenames[i])
-   r = projectRaster(r, reference)
- }
+
  
  # replace vlaues <- 0 into 0 or NA
  values(r)[values(r) < 0] = NA
@@ -132,7 +121,7 @@ extracted_SUM_DUST <- read.csv("F:/Historical_DUST/extracted_SUM_DAILY_DUST_UAE_
 
 # read rasters of the DAILY SUM of DUST EVENTS with SEVIRI data (I method)
 
-setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/daily_sum_I_Method")
+setwd("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/HDF5_outputs/I_method_EUMETSAT/daily_sum_I_EUMETSAT")
 filenames <- list.files(pattern = ".tif$")
 
 i <- 7
@@ -166,17 +155,6 @@ for (i in 1:length(filenames)) {
     r = projectRaster(r, reference)
   }
   
-  
-  max <- maxValue(r[[1]])
-  n <- (values(r) == max)
-  z <- length(n[n==TRUE])
-  # check if the raster is OK and not saturated (16960 is almost the number of pixels in the UAE -2km resolution)
-  if (z > 16960) {
-    r <- reference
-  } else {
-    r <- raster(filenames[i])
-    r = projectRaster(r, reference)
-  }
   
   # replace vlaues <- 0 into 0 or NA
   values(r)[values(r) < 0] = NA

@@ -356,6 +356,13 @@ all_DUST_MODIS_ANNUAL <- all_DUST_MODIS_ANNUAL %>%
 
 write.csv(all_DUST_MODIS_ANNUAL, "all_DUST_MAX_AOD_TERRA_AQUA_ANNUAL.csv")
 
+STAT_DUST_MODIS <- all_DUST_MODIS_ANNUAL %>%
+  group_by(station) %>%
+  summarise(MAX_AOD_AQUA = max(ANNUAL_MAX_AQUA, na.rm = TRUE),
+            MAX_AOD_TERRA = max(ANNUAL_MAX_TERRA, na.rm = TRUE))
+write.csv(STAT_DUST_MODIS, "STAT_DUST_MODIS.csv")
+
+
 ###########################################################
 ## ANNUAL plot ############################################
 ###########################################################
@@ -402,12 +409,12 @@ plot <- ggplot(all_DUST_MODIS_ANNUAL, aes(Date, ANNUAL_MAX_AQUA)) +
   theme_bw() +
   geom_bar(stat="identity") +
   facet_wrap(~ station) +
-  # stat_smooth(method = "lm", se = FALSE) +
-  theme(strip.text = element_text(size = 9)) + 
+  stat_smooth(method = "lm", se = FALSE) +
+  theme(strip.text = element_text(size = 14)) + 
   ylab(expression(paste("Maximum ANNUAL AOD (MODIS Aqua)"))) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=8, colour = "black", face="bold")) +
-  theme(axis.title.y = element_text(face="bold", colour="black", size=9),
+  theme(axis.title.y = element_text(face="bold", colour="black", size=15),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
 #   ylim(0, 160000)
@@ -432,12 +439,12 @@ plot <- ggplot(all_DUST_MODIS_ANNUAL, aes(Date, ANNUAL_MAX_TERRA)) +
   theme_bw() +
   geom_bar(stat="identity") +
   facet_wrap(~ station) +
-  # stat_smooth(method = "lm", se = FALSE) +
-  theme(strip.text = element_text(size = 9)) + 
+  stat_smooth(method = "lm", se = FALSE) +
+  theme(strip.text = element_text(size = 14)) + 
   ylab(expression(paste("Maximum ANNUAL AOD (MODIS Terra)"))) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=8, colour = "black", face="bold")) +
-  theme(axis.title.y = element_text(face="bold", colour="black", size=9),
+  theme(axis.title.y = element_text(face="bold", colour="black", size=15),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=10, colour = "black")) +
   scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) 
 #   ylim(0, 160000)
@@ -468,8 +475,8 @@ library(plyr)
 # reload MODIS MAX yearly AOD
 all_DUST_MODIS_ANNUAL <-  read.csv("all_DUST_MAX_AOD_TERRA_AQUA_ANNUAL.csv")
 
-# load METAAR data (sum dust)
-METAR_DATA_YEAR <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/METAR_DUST_VIS_YEAR.csv")
+# load METAAR data (sum dust) # CLEAR SKY
+METAR_DATA_YEAR <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/METAR_data/METAR_DUST_CLEAR_VIS_YEAR.csv")
 
 # join METAR data and SEVIRI data by YEAR and by STATION
 all_DUST_MODIS_ANNUAL <- all_DUST_MODIS_ANNUAL %>%
@@ -507,14 +514,14 @@ plot <- ggplot(all_DUST_MODIS_ANNUAL, aes(x = ANNUAL_MAX_AQUA, y=MIN_VIS)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("METAR (minimum visibility - km)"))) +
   xlab(expression(paste("MAX AOD (AQUA)"))) +
-  ylim(c(-1, 5)) +
-  xlim(c(0, 3.5)) +
+  # ylim(c(-1, 5)) +
+  # xlim(c(0, 3.5)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
   geom_text(data = eq_DUST, aes(x = 2, y = 4.5, label = V1),
-            parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
+            parse = TRUE, inherit.aes=FALSE, size = 5, color = "red" )
 plot
 
 # save plot
@@ -527,7 +534,7 @@ print(plot)
 dev.off()
 
 ################################################################################
-# correlate MODIS data (AQUA) with VISIBILITY events from METAR ################
+# correlate MODIS data (TERRA) with VISIBILITY events from METAR ################
 
 ## this function includes the intercept~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 lm_eqn <- function(df){
@@ -552,14 +559,14 @@ plot <- ggplot(all_DUST_MODIS_ANNUAL, aes(x = ANNUAL_MAX_TERRA, y=MIN_VIS)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("METAR (minimum visibility - km)"))) +
   xlab(expression(paste("MAX AOD (TERRA)"))) +
-  ylim(c(-1, 5)) +
-  xlim(c(0, 3.5)) +
+  # ylim(c(-1, 5)) +
+  # xlim(c(0, 3.5)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
   geom_text(data = eq_DUST, aes(x = 2, y = 4.5, label = V1),
-            parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
+            parse = TRUE, inherit.aes=FALSE, size = 5, color = "red" )
 plot
 
 # save plot
@@ -608,14 +615,14 @@ plot <- ggplot(all_DUST_MODIS_ANNUAL, aes(x = ANNUAL_MAX_AQUA, y=ANNUAL_SUM)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("Hours of Dust (METAR)"))) +
   xlab(expression(paste("MAX AOD (AQUA)"))) +
-  ylim(c(0, 1200)) +
-  xlim(c(0, 3.5)) +
+  # ylim(c(0, 1200)) +
+  # xlim(c(0, 3.5)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
-  geom_text(data = eq_DUST, aes(x = 2, y = 1100, label = V1),
-            parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
+  geom_text(data = eq_DUST, aes(x = 2, y = 650, label = V1),
+            parse = TRUE, inherit.aes=FALSE, size = 5, color = "red" )
 plot
 
 # save plot
@@ -653,14 +660,14 @@ plot <- ggplot(all_DUST_MODIS_ANNUAL, aes(x = ANNUAL_MAX_TERRA, y=ANNUAL_SUM)) +
   theme( strip.text = element_text(size = 12)) + 
   ylab(expression(paste("Hours of Dust (METAR)"))) +
   xlab(expression(paste("MAX AOD (TERRA)"))) +
-  ylim(c(0, 1200)) +
-  xlim(c(0, 3.5)) +
+  # ylim(c(0, 1200)) +
+  # xlim(c(0, 3.5)) +
   theme(axis.title.y = element_text(face="bold", colour="black", size=12),
         axis.text.y  = element_text(angle=0, vjust=0.5, size=12)) +
   theme(axis.title.x = element_text(face="bold", colour="black", size=12),
         axis.text.x  = element_text(angle=0, vjust=0.5, size=12)) +
-  geom_text(data = eq_DUST, aes(x = 2, y = 1100, label = V1),
-            parse = TRUE, inherit.aes=FALSE, size = 4, color = "red" )
+  geom_text(data = eq_DUST, aes(x = 2, y = 650, label = V1),
+            parse = TRUE, inherit.aes=FALSE, size = 5, color = "red" )
 plot
 
 # save plot

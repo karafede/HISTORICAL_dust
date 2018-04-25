@@ -177,7 +177,7 @@ TS <- seq(from=2004, by=1, to=2017)
 vec_all <- as.vector(raster_stack)
 
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 1000
+max_val <- 1500
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -217,9 +217,9 @@ DUST_images <- stack("STACK_YEARLY_24h_SUM_II_Method.tif")
                             colorkey=list(
                               space='bottom',                   
                               labels= list(at= floor(as.numeric( seq(low_IQR, high_IQR, length.out=7))),
-                                           font=3),
+                                           font=3, size = 5),
                               axis.line=list(col='black'),
-                              width=0.75,
+                              width=1.5,
                               title=expression(paste("        DUST (hours) "))
                             ),   
                             ## about the axis
@@ -453,7 +453,7 @@ h <- rasterVis::levelplot(DUST_images,
                             labels= list(at= floor(as.numeric( seq(low_IQR, high_IQR, length.out=7))),
                                          font=3),
                             axis.line=list(col='black'),
-                            width=0.75,
+                            width=1.5,
                             title=expression(paste("        DUST (hours) "))
                           ),   
                           ## about the axis
@@ -557,7 +557,7 @@ TS <- seq(from=2004, by=1, to=2017)
 vec_all <- as.vector(raster_stack)
 
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 950
+max_val <- 900
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -615,7 +615,7 @@ h <- rasterVis::levelplot(DUST_images,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
 # output_dir <- "F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT"

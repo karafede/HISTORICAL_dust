@@ -53,8 +53,8 @@ filenames <- list.files(pattern = ".tif$")
 # LIST filenames containing a specifc YEAR
 
 # LIST_YEARS <- list(2005, 2006, 2007, 2008, 2009)
-# LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
-LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
+LIST_YEARS <- seq(from = 2011, to = 2017, by= 1)  # update with the right YEAR range (2004 - 2017)
+# LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR range (2004 - 2017)
 
 
 # LIST_YEARS <- 2010
@@ -111,12 +111,12 @@ all_rasters_fall <- stack()
        
        ###### from  "2004-03-18" to "2011-06-30" #################################################
        # 61 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
-       r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
+       # r <- r/2.542  # 61/24,  max value should be 24h (hours of dust observations)
        # plot(r)
        
        ###### from  "2011-07-01" 20110701_II_Method_M_II_Method_sum  (181 file) ###################
        # 96 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
-       # r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
+       r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
        # plot(r)
        
        ##########################################################
@@ -199,9 +199,14 @@ all_rasters_fall <- stack()
 # sum rasters for the YEAR 2011, "old" and "new"
 r_2011_old_winter <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/WINTER_2011_24h_SUM_II_Method_old.tif")
 r_2011_old_summer <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/SUMMER_2011_24h_SUM_II_Method_old.tif")
+r_2011_old_winter <- projectRaster(r_2011_old_winter, reference)
+r_2011_old_summer <- projectRaster(r_2011_old_summer, reference)
 
 r_2011_new_winter <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/WINTER_2011_24h_SUM_II_Method_new.tif")
 r_2011_new_summer <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/SUMMER_2011_24h_SUM_II_Method_new.tif")
+r_2011_new_winter <- projectRaster(r_2011_new_winter, reference)
+r_2011_new_summer <- projectRaster(r_2011_new_summer, reference)
+
 
 r_2011_winter <- sum(r_2011_old_winter, r_2011_new_winter)
 plot(r_2011_winter)
@@ -235,6 +240,7 @@ filenames_FALL <- list.files(pattern = c("FALL"))
 # WINTER ##
 for (i in 1:length(filenames_WINTER)) {
   r <- raster(filenames_WINTER[i])
+  r = projectRaster(r, reference)
   values(r)[values(r) < 0] = NA
   all_rasters_WINTER <- stack(all_rasters_WINTER,r)
   # crop over UAE
@@ -250,6 +256,7 @@ writeRaster(all_rasters_WINTER_AVG, paste0(output_dir,"/", "AVG_WINTER_24h_SUM_I
 # SPRING ##
 for (i in 1:length(filenames_SPRING)) {
   r <- raster(filenames_SPRING[i])
+  r = projectRaster(r, reference)
   values(r)[values(r) < 0] = NA
   all_rasters_SPRING <- stack(all_rasters_SPRING,r)
   # crop over UAE
@@ -265,6 +272,7 @@ writeRaster(all_rasters_SPRING_AVG, paste0(output_dir,"/", "AVG_SPRING_24h_SUM_I
 # SUMMER ##
 for (i in 1:length(filenames_SUMMER)) {
   r <- raster(filenames_SUMMER[i])
+  r = projectRaster(r, reference)
   values(r)[values(r) < 0] = NA
   all_rasters_SUMMER <- stack(all_rasters_SUMMER,r)
   # crop over UAE
@@ -281,6 +289,7 @@ writeRaster(all_rasters_SUMMER_AVG, paste0(output_dir,"/", "AVG_SUMMER_24h_SUM_I
 # FALL ##
 for (i in 1:length(filenames_FALL)) {
   r <- raster(filenames_FALL[i])
+  r = projectRaster(r, reference)
   values(r)[values(r) < 0] = NA
   all_rasters_FALL <- stack(all_rasters_FALL,r)
   # crop over UAE
@@ -338,7 +347,7 @@ TS <- seq(from=2004, by=1, to=2017)
 
 vec_all <- as.vector(raster_stack_WINTER)
 max_val<- (max(vec_all, na.rm = T))
-max_val<- 200
+max_val<- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 stat_dat <- summary(as.vector(raster_stack_WINTER))
@@ -385,7 +394,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
                             # names.attr=rep(names(DUST_images))) +
                             names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
     latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-  h
+  # h
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
@@ -402,7 +411,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
   
   vec_all <- as.vector(raster_stack_SPRING)
   max_val<- (max(vec_all, na.rm = T))
-  max_val<- 360
+  max_val<- 750
   min_val<- 0
   # min_val<- (min(vec_all,  na.rm = T))
   stat_dat <- summary(as.vector(raster_stack_SPRING))
@@ -448,7 +457,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
                             # names.attr=rep(names(DUST_images))) +
                             names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
     latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-  h
+  # h
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
@@ -465,7 +474,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
   
   vec_all <- as.vector(raster_stack_SUMMER)
   max_val<- (max(vec_all, na.rm = T))
-  max_val<- 350
+  max_val<- 750
   min_val<- 0
   # min_val<- (min(vec_all,  na.rm = T))
   stat_dat <- summary(as.vector(raster_stack_SUMMER))
@@ -511,7 +520,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
                             # names.attr=rep(names(DUST_images))) +
                             names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
     latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-  h
+  # h
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
@@ -528,7 +537,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
   
   vec_all <- as.vector(raster_stack_FALL)
   max_val<- (max(vec_all, na.rm = T))
-  max_val<- 350
+  max_val<- 750
   min_val<- 0
   # min_val<- (min(vec_all,  na.rm = T))
   stat_dat <- summary(as.vector(raster_stack_FALL))
@@ -574,7 +583,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
                             # names.attr=rep(names(DUST_images))) +
                             names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
     latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-  h
+  # h
   
   
   output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
@@ -611,7 +620,7 @@ LIST_YEARS <- seq(from = 2004, to = 2011, by= 1)  # update with the right YEAR r
 
 
 # LIST_YEARS <- 2010
-# i <- 2010
+# i <- 2012
 # j <- 190
 
 
@@ -752,10 +761,14 @@ for (i in LIST_YEARS) {
 # sum rasters for the YEAR 2011, "old" and "new"
 r_2011_old_summer <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS/SUMMER_2011_24h_SUM_I_Method_old.tif")
 r_2011_new_summer <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS/SUMMER_2011_24h_SUM_I_Method_new.tif")
+r_2011_old_summer <- projectRaster(r_2011_old_summer, reference)
+r_2011_new_summer <- projectRaster(r_2011_new_summer, reference)
+
 
 r_2011_old_winter <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS/WINTER_2011_24h_SUM_I_Method_old.tif")
 r_2011_new_winter <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS/WINTER_2011_24h_SUM_I_Method_new.tif")
-
+r_2011_old_winter <- projectRaster(r_2011_old_winter, reference)
+r_2011_new_winter <- projectRaster(r_2011_new_winter, reference)
 
 
 r_2011_summer <- sum(r_2011_old_summer, r_2011_new_summer)
@@ -793,6 +806,7 @@ filenames_FALL <- list.files(pattern = c("FALL"))
 # WINTER ##
 for (i in 1:length(filenames_WINTER)) {
   r <- raster(filenames_WINTER[i])
+  r = projectRaster(r, reference)
   values(r)[values(r) < 0] = NA
   all_rasters_WINTER <- stack(all_rasters_WINTER,r)
   # crop over UAE
@@ -808,6 +822,7 @@ writeRaster(all_rasters_WINTER_AVG, paste0(output_dir,"/", "AVG_WINTER_24h_SUM_I
 # SPRING ##
 for (i in 1:length(filenames_SPRING)) {
   r <- raster(filenames_SPRING[i])
+  r = projectRaster(r, reference)
   values(r)[values(r) < 0] = NA
   all_rasters_SPRING <- stack(all_rasters_SPRING,r)
   # crop over UAE
@@ -823,6 +838,7 @@ writeRaster(all_rasters_SPRING_AVG, paste0(output_dir,"/", "AVG_SPRING_24h_SUM_I
 # SUMMER ##
 for (i in 1:length(filenames_SUMMER)) {
   r <- raster(filenames_SUMMER[i])
+  r = projectRaster(r, reference)
   values(r)[values(r) < 0] = NA
   all_rasters_SUMMER <- stack(all_rasters_SUMMER,r)
   # crop over UAE
@@ -839,6 +855,7 @@ writeRaster(all_rasters_SUMMER_AVG, paste0(output_dir,"/", "AVG_SUMMER_24h_SUM_I
 # FALL ##
 for (i in 1:length(filenames_FALL)) {
   r <- raster(filenames_FALL[i])
+  r = projectRaster(r, reference)
   values(r)[values(r) < 0] = NA
   all_rasters_FALL <- stack(all_rasters_FALL,r)
   # crop over UAE
@@ -887,7 +904,7 @@ TS <- seq(from=2004, by=1, to=2017)
 
 vec_all <- as.vector(raster_stack_WINTER)
 max_val<- (max(vec_all, na.rm = T))
-max_val<- 350
+max_val<- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 stat_dat <- summary(as.vector(raster_stack_WINTER))
@@ -934,7 +951,7 @@ h <- rasterVis::levelplot(DUST_images_WINTER,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
@@ -951,7 +968,7 @@ dev.off()
 
 vec_all <- as.vector(raster_stack_SPRING)
 max_val<- (max(vec_all, na.rm = T))
-max_val<- 420
+max_val<- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 stat_dat <- summary(as.vector(raster_stack_SPRING))
@@ -997,7 +1014,7 @@ h <- rasterVis::levelplot(DUST_images_SPRING,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
@@ -1014,7 +1031,7 @@ dev.off()
 
 vec_all <- as.vector(raster_stack_SUMMER)
 max_val<- (max(vec_all, na.rm = T))
-max_val<- 760
+max_val<- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 stat_dat <- summary(as.vector(raster_stack_SUMMER))
@@ -1060,7 +1077,7 @@ h <- rasterVis::levelplot(DUST_images_SUMMER,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
@@ -1077,7 +1094,7 @@ dev.off()
 
 vec_all <- as.vector(raster_stack_FALL)
 max_val<- (max(vec_all, na.rm = T))
-max_val<- 550
+max_val<- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 stat_dat <- summary(as.vector(raster_stack_FALL))
@@ -1123,7 +1140,7 @@ h <- rasterVis::levelplot(DUST_images_FALL,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
@@ -1188,7 +1205,7 @@ TS <- seq(from=2004, by=1, to=2017)
 
 vec_all <- as.vector(raster_stack)
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 220
+max_val <- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -1237,7 +1254,7 @@ h <- rasterVis::levelplot(DUST_images_WINTER,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
 png(paste0(output_dir, "/", "WINTER_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
@@ -1292,7 +1309,7 @@ TS <- seq(from=2004, by=1, to=2017)
 
 vec_all <- as.vector(raster_stack)
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 450
+max_val <- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -1341,7 +1358,7 @@ h <- rasterVis::levelplot(AVG_DUST_image_SUMMER,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
 png(paste0(output_dir, "/", "SUMMER_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
@@ -1395,7 +1412,7 @@ TS <- seq(from=2004, by=1, to=2017)
 
 vec_all <- as.vector(raster_stack)
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 270
+max_val <- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -1445,7 +1462,7 @@ h <- rasterVis::levelplot(AVG_DUST_image_SPRING,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
 png(paste0(output_dir, "/", "SPRING_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
@@ -1499,7 +1516,7 @@ TS <- seq(from=2004, by=1, to=2017)
 
 vec_all <- as.vector(raster_stack)
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 440
+max_val <- 750
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -1549,7 +1566,7 @@ h <- rasterVis::levelplot(AVG_DUST_image_FALL,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=as.character(seq(from = 2004, to = 2017, by= 1))) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+# h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
 png(paste0(output_dir, "/", "FALL_MAPS_mean_hours_DUST_EUMETSAT_&_METFRANCE.png"), width = 1100, height = 900,
@@ -1591,7 +1608,7 @@ STACK_seasons <- stack(WINTER_MAP,
 # TS <- seq(from=2004, by=1, to=2017)
 vec_all <- as.vector(STACK_seasons)
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 130
+max_val <- 150
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -1640,7 +1657,7 @@ h <- rasterVis::levelplot(STACK_seasons,
                           # names.attr=rep(names(DUST_images))) +
                           names.attr=c("Winter", "Spring", "Summer", "Fall")) +
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
-h
+#h
 
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
 png(paste0(output_dir, "/", "Mean_DUST_by_season_EUMETSAT_&_METFRANCE.png"), width = 1200, height = 900,
