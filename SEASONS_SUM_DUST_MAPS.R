@@ -115,7 +115,7 @@ all_rasters_fall <- stack()
        # plot(r)
        
        ###### from  "2011-07-01" 20110701_II_Method_M_II_Method_sum  (181 file) ###################
-       # 96 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
+       # 96 scenes per day every 15 minutes (hours of dust observations) for NEW SEVIRI data
        r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
        # plot(r)
        
@@ -337,6 +337,14 @@ raster_stack_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
 raster_stack_SPRING <- stack("STACK_SPRING_24h_SUM_II_Method.tif")
 raster_stack_SUMMER <- stack("STACK_SUMMER_24h_SUM_II_Method.tif")
 raster_stack_FALL <- stack("STACK_FALL_24h_SUM_II_Method.tif")
+
+# average numbers of hours in each season == 2106
+# calculate the percentage of hours of dust events in each season 
+# raster_stack_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")*100/2160
+# raster_stack_SPRING <- stack("STACK_SPRING_24h_SUM_II_Method.tif")*100/2160
+# raster_stack_SUMMER <- stack("STACK_SUMMER_24h_SUM_II_Method.tif")*100/2160
+# raster_stack_FALL <- stack("STACK_FALL_24h_SUM_II_Method.tif")*100/2160
+
 # check numbers of years
 TS <- seq(from=2004, by=1, to=2017)
 
@@ -378,7 +386,7 @@ DUST_images_WINTER <- stack("STACK_WINTER_24h_SUM_II_Method.tif")
                               labels= list(at= floor(as.numeric( seq(low_IQR, high_IQR, length.out=7))),
                                            font=3),
                               axis.line=list(col='black'),
-                              width=0.75,
+                              width=1.5,
                               title=expression(paste("        DUST (hours) "))
                             ),   
                             ## about the axis
@@ -676,7 +684,7 @@ for (i in LIST_YEARS) {
     # plot(r)
     
     ###### from  "2011-07-01" 20110701_II_Method_M_II_Method_sum  (181 file) ###################
-    # 96 scenes per day every 15 minutes (hours of dust observations) for OLD SEVIRI data
+    # 96 scenes per day every 15 minutes (hours of dust observations) for NEW SEVIRI data
     # r <- r/4  # 96/24,  max value should be 24h (hours of dust observations)
     # plot(r)
     
@@ -1592,23 +1600,44 @@ SUMMER_EUMETSAT <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_ma
 FALL_MetFrance <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_II_Method_METFRANCE/seasons_MAPS/AVG_FALL_24h_SUM_II_Method.tif") 
 FALL_EUMETSAT <- raster("F:/Historical_DUST/SEVIRI_DUST_MASK_outputs/yearly_maps_I_Method_EUMETSAT/seasons_MAPS/AVG_FALL_24h_SUM_I_Method.tif")
 
+WINTER_MetFrance <- WINTER_MetFrance*100/2160
+SPRING_MetFrance <- SPRING_MetFrance*100/2160
+SUMMER_MetFrance <- SUMMER_MetFrance*100/2160
+FALL_MetFrance <- FALL_MetFrance*100/2160
 
-WINTER_MAP <- mean(WINTER_MetFrance, WINTER_EUMETSAT)
-SPRING_MAP <- mean(SPRING_MetFrance, SPRING_MetFrance)
-SUMMER_MAP <- mean(SUMMER_MetFrance, SUMMER_EUMETSAT)
-FALL_MAP <- mean(FALL_MetFrance, FALL_EUMETSAT)
 
-STACK_seasons <- stack(WINTER_MAP,
-                      SPRING_MAP,
-                      SUMMER_MAP,
-                      FALL_MAP)
+WINTER_EUMETSAT <- WINTER_EUMETSAT*100/2160
+SPRING_EUMETSAT <- SPRING_EUMETSAT*100/2160
+SUMMER_EUMETSAT <- SUMMER_EUMETSAT*100/2160
+FALL_EUMETSAT <- FALL_EUMETSAT*100/2160
+
+# WINTER_MAP <- mean(WINTER_MetFrance, WINTER_EUMETSAT)
+# SPRING_MAP <- mean(SPRING_MetFrance, SPRING_MetFrance)
+# SUMMER_MAP <- mean(SUMMER_MetFrance, SUMMER_EUMETSAT)
+# FALL_MAP <- mean(FALL_MetFrance, FALL_EUMETSAT)
+
+# STACK_seasons <- stack(WINTER_MAP,
+#                       SPRING_MAP,
+#                       SUMMER_MAP,
+#                       FALL_MAP)
+
+STACK_seasons <- stack(WINTER_EUMETSAT,
+                       SPRING_EUMETSAT,
+                       SUMMER_EUMETSAT,
+                       FALL_EUMETSAT)
+
+STACK_seasons <- stack(WINTER_MetFrance,
+                       SPRING_MetFrance,
+                       SUMMER_MetFrance,
+                       FALL_MetFrance)
+
 
 
 
 # TS <- seq(from=2004, by=1, to=2017)
 vec_all <- as.vector(STACK_seasons)
 max_val<- (max(vec_all, na.rm = T))
-max_val <- 150
+max_val <- 260
 min_val<- 0
 # min_val<- (min(vec_all,  na.rm = T))
 
@@ -1632,7 +1661,9 @@ cols = c(rev(cool), rev(cool_2), rev(warm))
 
 h <- rasterVis::levelplot(STACK_seasons, 
                           #    margin=FALSE, main= as.character(TITLE),
-                          margin=FALSE, main= "Dust by SEASONS (EUMETSAT & MeteoFrance)",
+                          # margin=FALSE, main= "Dust by SEASONS (EUMETSAT & MeteoFrance)",
+                          # margin=FALSE, main= "Dust by SEASONS (MeteoFrance)",
+                          margin=FALSE, main= "Dust by SEASONS (EUMETSAT)",
                           xlab = "",
                           ylab = "",
                           ## about colorbar
@@ -1641,7 +1672,7 @@ h <- rasterVis::levelplot(STACK_seasons,
                             labels= list(at= floor(as.numeric( seq(low_IQR, high_IQR, length.out=7))),
                                          font=3),
                             axis.line=list(col='black'),
-                            width=0.75,
+                            width=1.5,
                             title=expression(paste("        DUST (hours) "))
                           ),   
                           ## about the axis
@@ -1659,10 +1690,25 @@ h <- rasterVis::levelplot(STACK_seasons,
   latticeExtra::layer(sp.polygons(shp_UAE, col = "black", alpha = 1))
 #h
 
+
+# output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
+# png(paste0(output_dir, "/", "Mean_DUST_by_season_METFRANCE.png"), width = 1200, height = 900,
+#     units = "px", pointsize = 100,
+#     bg = "white", res = 100)
+# print(h)
+# dev.off()
+
 output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
-png(paste0(output_dir, "/", "Mean_DUST_by_season_EUMETSAT_&_METFRANCE.png"), width = 1200, height = 900,
+png(paste0(output_dir, "/", "Mean_DUST_by_season_EUMETSAT.png"), width = 1200, height = 900,
     units = "px", pointsize = 100,
     bg = "white", res = 100)
 print(h)
 dev.off()
+
+# output_dir <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/plots"
+# png(paste0(output_dir, "/", "Mean_DUST_by_season_EUMETSAT_&_METFRANCE.png"), width = 1200, height = 900,
+#     units = "px", pointsize = 100,
+#     bg = "white", res = 100)
+# print(h)
+# dev.off()
 

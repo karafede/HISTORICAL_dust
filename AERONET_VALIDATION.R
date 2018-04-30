@@ -8,6 +8,7 @@ library(rgdal)
 library(NISTunits)
 library(stringr)
 library(ggplot2)
+library(scales)
 
 # load location of airport in the UAE
 
@@ -153,11 +154,11 @@ plot <- ggplot(METAR_AERONET_AUH, aes(DateTime, AOD_500nm)) +
   theme(strip.text = element_text(size = 12)) + 
   ylab(expression(paste("AOD"))) +
   theme(axis.title.x=element_blank(),
-        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=15, colour = "black", face="bold")) +
-  theme(axis.title.y = element_text(face="bold", colour="black", size=20),
-        axis.text.y  = element_text(angle=0, vjust=0.5, size=20, colour = "black")) +
-  scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y"))
-#  ylim(0, 100)
+        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=25, colour = "black", face="bold")) +
+  theme(axis.title.y = element_text(face="bold", colour="black", size=25),
+        axis.text.y  = element_text(angle=0, vjust=0.5, size=25, colour = "black")) +
+  scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
+ylim(0, 2.3)
 plot
 
 
@@ -220,8 +221,8 @@ plot <- ggplot(METAR_AERONET_AUH, aes(DateTime, AOD_500nm)) +
 #  geom_point(aes(y = AOD_500nm, col = "AOD_500nm"), alpha=1, col="black", size = 1.5) +
   geom_point(aes(y = AOD_500nm_CLEAR_SKY, col = "AOD_500nm_CLEAR_SKY"), alpha=1, col="blue", size = 1.5) +
 #  geom_point(aes(y = AOD_500nm_CLOUD, col = "AOD_500nm_CLOUD"), alpha=1, col="red", size = 1.5) +
-  geom_point(aes(y = DAILY_AOD_TERRA, col = "DAILY_AOD_TERRA"), alpha=1, col="red", size = 1.5, shape=2) +
-  geom_point(aes(y = DAILY_AOD_TERRA, col = "DAILY_AOD_AQUA"), alpha=1, col="red", size = 1.5, shape=2) +
+  geom_point(aes(y = DAILY_AOD_TERRA, col = "DAILY_AOD_TERRA"), alpha=1, col="red", size = 2, shape=2) +
+  geom_point(aes(y = DAILY_AOD_TERRA, col = "DAILY_AOD_AQUA"), alpha=1, col="red", size = 2, shape=2) +
  # geom_smooth(method="lm", aes(y = DAILY_AOD_AQUA, col = "DAILY_AOD_AQUA"), formula = y ~ poly(x, 26), size = 1, fill = "blue", col = "black") +  
   # stat_smooth(method = "loess") +
   theme(strip.text = element_text(size = 12)) + 
@@ -239,6 +240,88 @@ plot
 output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/AERONET_L2/"
 
 png(paste0(output_folder,"AERONET_MODIS_AUH_CLEAR_SKY.jpg"),
+    width = 1600, height = 1050, units = "px", pointsize = 30,
+    bg = "white", res = 150)
+print(plot)
+dev.off()
+
+
+#############################################################
+# show AERONET data when ther is DUST > 1 from SDF SEVIRI ###
+#############################################################
+
+# SEVIRI_DAILY_EUMETSAT <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/extracted_SUM_DAILY_DUST_UAE_Airports_I_Method.csv")
+SEVIRI_DAILY_METEOFRANCE <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/extracted_SUM_DAILY_DUST_UAE_Airports_II_Method.csv")
+SEVIRI_DAILY_METEOFRANCE_AUH_DUST <- SEVIRI_DAILY_METEOFRANCE %>%
+   mutate(Date = ymd(DateTime)) %>%
+  filter(station == "ABU DHABI INTL") %>%
+  filter(SUM_DAILY_DUST > 0)
+
+SEVIRI_DAILY_METEOFRANCE_AUH_DUST <- SEVIRI_DAILY_METEOFRANCE_AUH_DUST %>%
+  dplyr::select(Date,
+         SUM_DAILY_DUST)
+
+# all AEORONET and METAR data in Abu Dhabi CLEAR SKY ONLY
+METAR_AERONET_AUH_CLEAR_SKY <- read.csv("Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/AERONET_L2/METAR_AERONET_AUH_CLEAR_SKY.csv")
+str(METAR_AERONET_AUH_CLEAR_SKY)
+METAR_AERONET_AUH_CLEAR_SKY <- METAR_AERONET_AUH_CLEAR_SKY %>%
+  mutate(DateTime = mdy_hm(DateTime),
+         AOD_500nm_CLEAR_SKY = AOD_500nm) %>%
+  mutate(Date = date(DateTime))
+
+# mean of all AOD by day (AERONET)
+METAR_AERONET_AUH_CLEAR_SKY_DAILY <- METAR_AERONET_AUH_CLEAR_SKY %>%
+  group_by(Date) %>%
+  summarize(AOD_500nm_CLEAR_SKY_DAILY = mean(AOD_500nm, na.rm = TRUE))
+
+# change NaN into NA
+METAR_AERONET_AUH_CLEAR_SKY_DAILY[is.na(METAR_AERONET_AUH_CLEAR_SKY_DAILY)] <- " "
+
+METAR_AERONET_AUH_CLEAR_SKY_DAILY <-  METAR_AERONET_AUH_CLEAR_SKY_DAILY %>%
+  left_join(SEVIRI_DAILY_METEOFRANCE_AUH_DUST , by = "Date")
+
+# add a column of AOD only when there is dust
+
+i <- 2
+
+METAR_AERONET_AUH_CLEAR_SKY_DAILY$AOD_DUST <- NA
+
+for (i in 1:nrow(METAR_AERONET_AUH_CLEAR_SKY_DAILY)) {
+if(!is.na(METAR_AERONET_AUH_CLEAR_SKY_DAILY$SUM_DAILY_DUST[i])) {
+  METAR_AERONET_AUH_CLEAR_SKY_DAILY$AOD_DUST[i] <- METAR_AERONET_AUH_CLEAR_SKY_DAILY$AOD_500nm_CLEAR_SKY_DAILY[i] 
+}
+}
+
+# plot
+str(METAR_AERONET_AUH_CLEAR_SKY_DAILY)
+METAR_AERONET_AUH_CLEAR_SKY_DAILY$AOD_500nm_CLEAR_SKY_DAILY <- as.numeric(METAR_AERONET_AUH_CLEAR_SKY_DAILY$AOD_500nm_CLEAR_SKY_DAILY) 
+METAR_AERONET_AUH_CLEAR_SKY_DAILY$AOD_DUST <- as.numeric(METAR_AERONET_AUH_CLEAR_SKY_DAILY$AOD_DUST) 
+METAR_AERONET_AUH_CLEAR_SKY_DAILY$Date <- as.POSIXct(METAR_AERONET_AUH_CLEAR_SKY_DAILY$Date)
+
+METAR_AERONET_AUH_CLEAR_SKY_DAILY <- METAR_AERONET_AUH_CLEAR_SKY_DAILY %>%
+  dplyr::select(Date,
+                AOD_500nm_CLEAR_SKY_DAILY,
+                AOD_DUST)
+
+plot <- ggplot(METAR_AERONET_AUH_CLEAR_SKY_DAILY, aes(Date, AOD_DUST)) +
+  theme_bw() +
+ geom_point(aes(y = AOD_500nm_CLEAR_SKY_DAILY, col = "AOD_500nm_CLEAR_SKY_DAILY"), alpha=1, col="red", size = 2, shape=2) +
+  geom_point(aes(y = AOD_DUST, col = "AOD_DUST"), alpha=1, col="blue", size = 1.5) +
+    theme(strip.text = element_text(size = 12)) + 
+  ylab(expression(paste("AOD AERONET (@Masdar)"))) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x  = element_text(angle=90, vjust=0.5, hjust = 0.5, size=25, colour = "black", face="bold")) +
+  theme(axis.title.y = element_text(face="bold", colour="black", size=25),
+        axis.text.y  = element_text(angle=0, vjust=0.5, size=25, colour = "black")) +
+  scale_x_datetime(breaks = date_breaks("1 year"), labels = date_format("%Y")) +
+  ylim(0, 2)
+plot
+
+
+# save plot
+output_folder <- "Z:/_SHARED_FOLDERS/Air Quality/Phase 2/HISTORICAL_dust/AERONET_L2/"
+
+png(paste0(output_folder,"AERONET_SDF_MeteoFrance_CLEAR_SKY.jpg"),
     width = 1600, height = 1050, units = "px", pointsize = 30,
     bg = "white", res = 150)
 print(plot)
